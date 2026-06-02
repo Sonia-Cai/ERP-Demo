@@ -1,0 +1,403 @@
+/**
+ * Design Tokens
+ * 包含：颜色、排版、间距、圆角、阴影、描边、图标尺寸、控件高度
+ */
+
+:root {
+
+  /* ============================================================
+   * 颜色 · Colors
+   * ============================================================ */
+
+  /* ------ Brand / 品牌蓝 ------ */
+  --color-brand-1: #EAF1FF;   /* 选中背景色 */
+  --color-brand-2: #C8DAFE;   /* 焦点 focus */
+  --color-brand-3: #A4C1FD;   /* 禁用 disabled */
+  --color-brand-4: #7FA7FC;
+  --color-brand-5: #5A8BFB;   /* 悬浮 hover */
+  --color-brand-6: #346BFA;   /* 正常 normal（主色）*/
+  --color-brand-7: #1E4CCF;   /* 点击激活 active */
+  --color-brand-8: #0C31A4;
+  --color-brand-9: #031B78;
+  --color-brand-10: #010058;
+
+  /* 语义别名 */
+  --color-primary:          var(--color-brand-6);
+  --color-primary-hover:    var(--color-brand-5);
+  --color-primary-active:   var(--color-brand-7);
+  --color-primary-disabled: var(--color-brand-3);
+  --color-primary-focus:    var(--color-brand-2);
+  --color-primary-bg:       var(--color-brand-1);
+
+  /* ------ Green / 成功色 ------ */
+  --color-green-1: #EDFFEB;   /* 选中背景色 */
+  --color-green-2: #B9EEB4;   /* 焦点 focus */
+  --color-green-3: #83DE7C;   /* 禁用 disabled */
+  --color-green-4: #56CD4F;
+  --color-green-5: #2DBB27;   /* 悬浮 hover */
+  --color-green-6: #0DAA07;   /* 正常 normal */
+  --color-green-7: #099305;   /* 点击激活 active */
+  --color-green-8: #067B03;
+  --color-green-9: #046402;
+  --color-green-10: #014D00;
+
+  /* 语义别名 */
+  --color-success:          var(--color-green-6);
+  --color-success-hover:    var(--color-green-5);
+  --color-success-active:   var(--color-green-7);
+  --color-success-disabled: var(--color-green-3);
+  --color-success-focus:    var(--color-green-2);
+  --color-success-bg:       var(--color-green-1);
+
+  /* ------ Red / 错误色 ------ */
+  --color-red-1: #FFE8E9;     /* 选中背景色 */
+  --color-red-2: #FFBDBF;     /* 焦点 focus */
+  --color-red-3: #FF939A;     /* 禁用 disabled */
+  --color-red-4: #FF6879;
+  --color-red-5: #FF3D60;     /* 悬浮 hover */
+  --color-red-6: #FF0E53;     /* 正常 normal */
+  --color-red-7: #D30643;     /* 点击激活 active */
+  --color-red-8: #A70433;
+  --color-red-9: #7A0223;
+  --color-red-10: #4E0013;
+
+  /* 语义别名 */
+  --color-error:          var(--color-red-6);
+  --color-error-hover:    var(--color-red-5);
+  --color-error-active:   var(--color-red-7);
+  --color-error-disabled: var(--color-red-3);
+  --color-error-focus:    var(--color-red-2);
+  --color-error-bg:       var(--color-red-1);
+
+  /* ------ Gold / 警告色 ------ */
+  --color-gold-1: #FFFBF4;    /* 选中背景色 */
+  --color-gold-2: #FFF3DC;    /* 焦点 focus */
+  --color-gold-3: #FFE9BE;    /* 禁用 disabled */
+  --color-gold-4: #FFDD98;
+  --color-gold-5: #FFD069;    /* 悬浮 hover */
+  --color-gold-6: #FFC000;    /* 正常 normal */
+  --color-gold-7: #CD9A00;    /* 点击激活 active */
+  --color-gold-8: #9E7600;
+  --color-gold-9: #715400;
+  --color-gold-10: #473300;
+
+  /* 语义别名 */
+  --color-warning:          var(--color-gold-6);
+  --color-warning-hover:    var(--color-gold-5);
+  --color-warning-active:   var(--color-gold-7);
+  --color-warning-disabled: var(--color-gold-3);
+  --color-warning-focus:    var(--color-gold-2);
+  --color-warning-bg:       var(--color-gold-1);
+
+  /* ------ Orange / 橙色 ------ */
+  --color-orange-1: #FFF6F0;
+  --color-orange-2: #FFE3D1;
+  --color-orange-3: #FFCEAF;
+  --color-orange-4: #FFB788;
+  --color-orange-5: #FF9E5A;
+  --color-orange-6: #FF840E;  /* 正常 normal */
+  --color-orange-7: #CC680B;
+  --color-orange-8: #9E5006;
+  --color-orange-9: #713702;
+  --color-orange-10: #482000;
+
+  /* ------ Purple / 紫色 ------ */
+  --color-purple-1: #E9EBFF;
+  --color-purple-2: #C7CAFE;
+  --color-purple-3: #A6A9FD;
+  --color-purple-4: #8986FC;
+  --color-purple-5: #7060FB;
+  --color-purple-6: #5F34FA;  /* 正常 normal */
+  --color-purple-7: #491ECA;
+  --color-purple-8: #350F9B;
+  --color-purple-9: #24056F;
+  --color-purple-10: #130046;
+
+  /* ------ Turquoise / 绿松石蓝 ------ */
+  --color-turquoise-1: #F0FAFF;
+  --color-turquoise-2: #D4F0FF;
+  --color-turquoise-3: #B5E6FF;
+  --color-turquoise-4: #90DBFF;
+  --color-turquoise-5: #64CFFF;
+  --color-turquoise-6: #00C2FF;  /* 正常 normal */
+  --color-turquoise-7: #009BCD;
+  --color-turquoise-8: #00769D;
+  --color-turquoise-9: #00536F;
+  --color-turquoise-10: #003245;
+
+  /* ------ Cyan / 青色 ------ */
+  --color-cyan-1: #E9FFF2;
+  --color-cyan-2: #BCFFDC;
+  --color-cyan-3: #8FFFC8;
+  --color-cyan-4: #64FFBB;
+  --color-cyan-5: #35FFB2;
+  --color-cyan-6: #00F4B4;  /* 正常 normal */
+  --color-cyan-7: #00D38F;
+  --color-cyan-8: #00A770;
+  --color-cyan-9: #007A51;
+  --color-cyan-10: #004E32;
+
+  /* ------ Neutral / 中性色 · 灰度 ------ */
+  --color-white: #FFFFFF;     /* White1 · 按钮文字色/文字反色 */
+  --color-gray-1: #F3F5F8;    /* 默认页面背景色 */
+  --color-gray-2: #EBEDF0;
+  --color-gray-3: #E4E6EA;    /* 分割线1 · 禁用填充颜色 */
+  --color-gray-4: #CFD2D7;    /* 分割线2 */
+  --color-gray-5: #C1C5CC;
+  --color-gray-6: #A1A6B0;    /* 禁用不可点击 */
+  --color-gray-7: #858B97;    /* 提示信息文字 · 占位符文字 */
+  --color-gray-8: #717887;
+  --color-gray-9: #586071;
+  --color-gray-10: #454D5F;
+  --color-gray-11: #323B4B;   /* 正文 */
+  --color-gray-12: #272D3A;
+  --color-gray-13: #1E242F;   /* 二级标题 · 图标主色 */
+  --color-gray-14: #13171F;   /* 一级标题 */
+
+  /* 语义别名 · 文字 */
+  --color-text-heading-1:    var(--color-gray-14);
+  --color-text-heading-2:    var(--color-gray-13);
+  --color-text-body:         var(--color-gray-11);
+  --color-text-secondary:    var(--color-gray-7);
+  --color-text-disabled:     var(--color-gray-6);
+  --color-text-inverse:      var(--color-white);
+  --color-text-link:         var(--color-brand-6);
+
+  /* 语义别名 · 背景 */
+  --color-bg-page:      var(--color-gray-1);
+  --color-bg-container: var(--color-white);
+  --color-bg-disabled:  var(--color-gray-3);
+  --color-bg-selected:  var(--color-brand-1);
+
+  /* 语义别名 · 边框 */
+  --color-border-default:  var(--color-gray-3);
+  --color-border-heavy:    var(--color-gray-4);
+
+  /* 语义别名 · 图标 */
+  --color-icon-primary:   var(--color-gray-13);
+  --color-icon-secondary: var(--color-gray-7);
+
+
+  /* ============================================================
+   * 排版 · Typography
+   * ============================================================ */
+
+  --font-family: 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  /* 字号 / 行高（须成对使用：14px→22px，16px→24px） */
+  --font-size-small:    12px;
+  --line-height-small:  20px;
+
+  --font-size-regular:  14px;
+  --line-height-regular: 22px;
+
+  --font-size-h6:       16px;
+  --line-height-h6:     24px;
+
+  --font-size-h5:       20px;
+  --line-height-h5:     30px;
+
+  --font-size-h4:       24px;
+  --line-height-h4:     36px;
+
+  /* 字重 */
+  --font-weight-regular:  400;
+  --font-weight-semibold: 600;
+
+
+  /* ============================================================
+   * 间距 · Spacing
+   * ============================================================ */
+
+  --spacing-none:        0px;
+  --spacing-super-tight: 2px;
+  --spacing-extra-tight: 4px;
+  --spacing-tight:       8px;
+  --spacing-base-tight:  12px;
+  --spacing-base:        16px;
+  --spacing-base-loose:  20px;
+  --spacing-loose:       24px;
+  --spacing-extra-loose: 32px;
+  --spacing-super-loose: 40px;
+
+
+  /* ============================================================
+   * 圆角 · Border Radius
+   * ============================================================ */
+
+  --radius-extra-small: 3px;
+  --radius-small:       3px;
+  --radius-medium:      6px;
+  --radius-large:       10px;
+  --radius-tag:         30px;  /* 所有标签（Tag）专用圆角 */
+  --radius-full:        9999px;
+
+  /* 一级页主内容白底卡片（.list-page-card）：圆角 + 卡片内留白 + 相对主栏的外边距 */
+  --radius-card:                        10px;
+  --card-page-padding:                  var(--spacing-base); /* 16px，白卡内容区内边距 */
+  /* 可选：当页面需要「面包屑」时，面包屑距主栏顶部 */
+  --layout-primary-breadcrumb-top:      4px;
+  --layout-primary-card-margin-right:   16px;
+  --layout-primary-card-margin-bottom:  16px;
+  --layout-primary-card-margin-left:    0px;   /* 白卡左沿贴导航栏侧，与侧栏 0 间距 */
+
+  /* 页面式表单：可滚动主内容相对白卡边缘的上/左（及对称右下）内边距，默认 24px */
+  --layout-page-form-content-padding:   var(--spacing-loose);
+
+
+  /* ============================================================
+   * 阴影 · Shadows
+   * ============================================================ */
+
+  --shadow-0: none;
+  --shadow-1: 0px 2px 4px rgba(19, 23, 31, 0.10);
+  --shadow-2: 0px -2px 4px rgba(19, 23, 31, 0.10);
+  --shadow-3: 0px 3px 6px rgba(19, 23, 31, 0.20);
+
+
+  /* ============================================================
+   * 描边 · Border Thickness
+   * ============================================================ */
+
+  --border-width-none:  0px;
+  --border-width:       1px;
+  --border-width-focus: 1px;
+
+
+  /* ============================================================
+   * 图标尺寸 · Icon Size
+   * ============================================================ */
+
+  --icon-size-xs: 8px;
+  --icon-size-sm: 12px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 24px;
+
+
+  /* ============================================================
+   * 控件高度 · Control Height
+   * ============================================================ */
+
+  --control-height-sm: 24px;
+  --control-height-md: 32px;
+  --control-height-lg: 40px;
+
+
+  /* ============================================================
+   * 输入框宽度 · Input Width
+   * ============================================================ */
+
+  --input-width-number: 96px;   /* 数字输入框：仅用于纯数字输入（数量、金额等） */
+  --input-width-short:  200px;  /* 短字段：仅用于表格内嵌（状态、数量、货币单位） */
+  --input-width-medium: 240px;  /* 中字段：表单主力宽度（日期、SKU、渠道、仓库名称等） */
+  --input-width-long:   400px;  /* 长字段：备注、描述、地址 */
+
+
+  /* ============================================================
+   * 抽屉宽度 · Drawer Width
+   * ============================================================
+   * 实际宽度由表单/表格等内容所需的最大宽度决定，并不得超过本上限。
+   * 推荐实现：width: max-content; max-width: var(--drawer-width-max);
+   * 详见 form-standard.md §4.1
+   */
+
+  --drawer-width-max: 80vw; /* 相对视口的上限；约等于「页面可感区域宽度」的 80% */
+
+
+  /* ============================================================
+   * 全局壳层 · App Shell / ERP 导航（Figma「ERP 导航」画板）
+   * 详见 REFERENCES/navigation-shell.md
+   * ============================================================ */
+
+  --layout-nav-rail-width:         74px;
+  --layout-nav-secondary-width:    176px;
+  --layout-chrome-header-height:  40px;
+  --layout-tab-bar-height:         36px;
+
+  --nav-logo-zone-height:           90px;
+  --nav-rail-item-outer-padding-x:  6px;
+  --nav-rail-item-outer-padding-y:  4px;
+  --nav-rail-item-inner-padding:    6px;
+  --nav-rail-icon-label-gap:        4px;
+  --font-size-nav-rail-label:       10px;
+  --line-height-nav-rail-label:     18px;
+
+  --nav-chrome-icon-size:           18px;
+  --nav-chrome-cluster-gap:         18px;
+  --nav-user-avatar-size:           22px;
+  --nav-user-avatar-radius:         4px;
+  --nav-tab-gap:                    2px;
+
+  --radius-chrome-tab:              4px; /* 顶栏页签上圆角（与 Figma 一致，略大于 --radius-small） */
+  --shadow-tab-lift:                0 2px 2px rgba(19, 23, 31, 0.1);
+  --color-chrome-tab-hover-bg:      rgba(19, 23, 31, 0.06);
+}
+
+/* ════════════════════════════════════════════════════════════
+ * 全局：一级页主内容白底卡片（表格页/看板页等：面包屑 + 标题 + 工具栏 + 主体）
+ * 圆角 10px、无投影；白卡 margin：左 0、右 16、下 16；列表主栏见 `.list-content`；页面式表单白卡内边距见 `.list-page-card.pf-page-card`（整卡 padding 0）与 `--layout-page-form-content-padding`。
+ * 表格外壳仍用 .list-bg / .tbl-wrap，勿再叠一层大圆角白底。
+ * ════════════════════════════════════════════════════════════ */
+
+.list-page-card {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  box-shadow: none;
+  padding: var(--card-page-padding);
+  margin: 0 var(--layout-primary-card-margin-right) var(--layout-primary-card-margin-bottom)
+    var(--layout-primary-card-margin-left);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 列表/看板类一级页：白卡必须占满主栏剩余高度（右/下边距固定 16px） */
+.list-content > .list-page-card {
+  flex: 1;
+}
+
+/* 页面式表单：白卡同样占满主栏剩余高度 */
+.pf-wrap > .list-page-card {
+  flex: 1;
+}
+
+/* 页面式整卡（.pf-page-card）：白卡自身不加整卡 padding，分割线、表头线等须通栏；主内容区用 .pf-inner 的 padding */
+.list-page-card.pf-page-card {
+  padding: 0;
+}
+
+/* 一级页：主栏滚动容器（列表/看板类）
+ * 默认：无面包屑，白卡紧贴页签下沿；白卡右/下固定 16px，左贴侧栏侧；白卡占满剩余高度且内部滚动。
+ * 若需要面包屑：给 `.list-content` 加 `.has-breadcrumb`（见下）。
+ */
+.list-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* 可选面包屑：只影响顶部，不改变白卡与右/下边距规则 */
+.list-content.has-breadcrumb {
+  padding-top: var(--layout-primary-breadcrumb-top);
+}
+
+/* ============================================================
+ * 全局壳画布（团队选型：方案 A）
+ * 侧栏、顶栏（Chrome）、主内容区背后统一为 Gray1（--color-bg-page）；
+ * 白底卡片仅覆盖业务内容区，与画布形成层次，主内容外边距右/下 16px 露出的区域可辨。
+ * ============================================================ */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  height: 100%;
+  min-height: 100%;
+  background: var(--color-bg-page);
+}
