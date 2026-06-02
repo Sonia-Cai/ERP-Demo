@@ -1189,7 +1189,7 @@ const goodSummary = ref({
                       :class="{ 'analysis-panel__geo-chip--active': activeLineupCountries.includes(c.code) }"
                       @click="toggleCountry(c.code)"
                     >
-                      <span v-if="c.flag" class="analysis-panel__geo-flag" aria-hidden="true">{{ c.flag }}</span>
+                      <img v-if="c.code" class="analysis-panel__geo-flag" :src="`https://flagcdn.com/16x12/${c.code.toLowerCase()}.png`" :alt="c.label" />
                       {{ c.label }}
                     </button>
                   </div>
@@ -1243,7 +1243,7 @@ const goodSummary = ref({
             <template v-if="column.key === 'country'">
               <div class="data-cell">
                 <span class="country-cell">
-                  <span class="country-cell__flag">{{ record.flag }}</span>
+                  <img class="country-cell__flag" :src="`https://flagcdn.com/16x12/${record.code.toLowerCase()}.png`" :alt="record.code" />
                   <span class="country-cell__code">{{ record.code }}</span>
                 </span>
                 <span class="data-cell__spacer" aria-hidden="true" />
@@ -1390,7 +1390,7 @@ const goodSummary = ref({
             <li v-for="(it, idx) in profitBreakdown" :key="it.code" class="bar-list__item">
               <span class="bar-list__index">{{ idx + 1 }}.</span>
               <span class="bar-list__country">
-                <span class="bar-list__flag">{{ it.flag }}</span>
+                <img class="bar-list__flag" :src="`https://flagcdn.com/16x12/${it.code.toLowerCase()}.png`" :alt="it.code" />
                 <span class="bar-list__code">{{ it.code }}</span>
               </span>
               <div class="bar-list__track">
@@ -1770,8 +1770,11 @@ const goodSummary = ref({
 }
 
 .analysis-panel__geo-flag {
-  font-size: 13px;
-  line-height: 1;
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 1px;
+  flex-shrink: 0;
 }
 
 .analysis-panel__categories::-webkit-scrollbar {
@@ -1946,9 +1949,11 @@ const goodSummary = ref({
 }
 
 .country-cell__flag {
-  font-size: 18px;
-  line-height: 1;
+  width: 16px;
+  height: 12px;
   flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 1px;
 }
 
 .country-cell__code {
@@ -2196,7 +2201,10 @@ const goodSummary = ref({
 }
 
 .bar-list__flag {
-  font-size: 16px;
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 1px;
   flex-shrink: 0;
 }
 
@@ -2310,6 +2318,10 @@ const goodSummary = ref({
 }
 
 .dimension-card--active .dimension-card__label {
+  color: var(--color-brand-6);
+}
+
+.dimension-card--active .dimension-card__main {
   color: var(--color-brand-6);
 }
 
