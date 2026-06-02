@@ -1462,10 +1462,6 @@ function onSummaryEdit(kind: 'risk' | 'good') {
           <div class="summary-card summary-card--risk">
             <div class="summary-card__head">
               <div class="summary-card__title">风险总结</div>
-              <a-button type="link" size="small" @click="onSummaryEdit('risk')">
-                <template #icon><EditOutlined /></template>
-                编辑
-              </a-button>
             </div>
             <div class="summary-card__inner summary-card__inner--risk">
               <div class="summary-card__body">
@@ -1491,10 +1487,6 @@ function onSummaryEdit(kind: 'risk' | 'good') {
                 <span class="summary-card__title">经营指标总结</span>
                 <a-tag color="success">已达标</a-tag>
               </div>
-              <a-button type="link" size="small" @click="onSummaryEdit('good')">
-                <template #icon><EditOutlined /></template>
-                编辑
-              </a-button>
             </div>
             <div class="summary-card__inner summary-card__inner--good">
               <div class="summary-card__body">
