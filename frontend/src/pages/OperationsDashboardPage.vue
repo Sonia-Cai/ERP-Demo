@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import type { TableColumnsType } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
-import { ArrowDownOutlined, ArrowUpOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons-vue'
 import tab1ActiveUrl from '@/assets/dashboard/tab1-active.png?url'
 import tab1InactiveUrl from '@/assets/dashboard/tab1-inactive.png?url'
 import tab2ActiveUrl from '@/assets/dashboard/tab2-active.png?url'
@@ -962,9 +962,7 @@ const goodSummary = ref({
   date: '2026/05/27',
 })
 
-function onSummaryEdit(kind: 'risk' | 'good') {
-  message.info(`编辑${kind === 'risk' ? '风险' : '经营指标'}总结（演示）`)
-}
+
 </script>
 
 <template>
