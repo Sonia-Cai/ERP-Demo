@@ -568,6 +568,12 @@ const lineupTableColumns = [
   { title: 'CSA', key: 'csa', align: 'left' as const, width: 100 },
 ]
 
+/** flagcdn.com 使用 ISO 3166-1 alpha-2，部分内部代码需映射 */
+const CODE_TO_ISO: Record<string, string> = { UK: 'GB' }
+function flagUrl(code: string): string {
+  return `https://flagcdn.com/16x12/${(CODE_TO_ISO[code] || code).toLowerCase()}.png`
+}
+
 const TARGET_TAG_STYLE: Record<string, string> = {
   '节点BS': 'background:#FFE3D1;',
   '价格第一': 'background:#B9EEB4;',
@@ -1189,7 +1195,7 @@ const goodSummary = ref({
                       :class="{ 'analysis-panel__geo-chip--active': activeLineupCountries.includes(c.code) }"
                       @click="toggleCountry(c.code)"
                     >
-                      <img v-if="c.code" class="analysis-panel__geo-flag" :src="`https://flagcdn.com/16x12/${c.code.toLowerCase()}.png`" :alt="c.label" />
+                      <img v-if="c.code && c.code !== 'all'" class="analysis-panel__geo-flag" :src="flagUrl(c.code)" :alt="c.label" />
                       {{ c.label }}
                     </button>
                   </div>
@@ -1243,7 +1249,7 @@ const goodSummary = ref({
             <template v-if="column.key === 'country'">
               <div class="data-cell">
                 <span class="country-cell">
-                  <img class="country-cell__flag" :src="`https://flagcdn.com/16x12/${record.code.toLowerCase()}.png`" :alt="record.code" />
+                  <img class="country-cell__flag" :src="flagUrl(record.code)" :alt="record.code" />
                   <span class="country-cell__code">{{ record.code }}</span>
                 </span>
                 <span class="data-cell__spacer" aria-hidden="true" />
@@ -1390,7 +1396,7 @@ const goodSummary = ref({
             <li v-for="(it, idx) in profitBreakdown" :key="it.code" class="bar-list__item">
               <span class="bar-list__index">{{ idx + 1 }}.</span>
               <span class="bar-list__country">
-                <img class="bar-list__flag" :src="`https://flagcdn.com/16x12/${it.code.toLowerCase()}.png`" :alt="it.code" />
+                <img class="bar-list__flag" :src="flagUrl(it.code)" :alt="it.code" />
                 <span class="bar-list__code">{{ it.code }}</span>
               </span>
               <div class="bar-list__track">
