@@ -917,7 +917,7 @@ const LINEUP_COUNTRIES = [
   { code: 'US',  flag: '🇺🇸', label: '美国' },
   { code: 'DE',  flag: '🇩🇪', label: '德国' },
   { code: 'CA',  flag: '🇨🇦', label: '加拿大' },
-  { code: 'UK',  flag: '🇬🇧', label: '英国' },
+  { code: 'GB',  flag: '🇬🇧', label: '英国' },
   { code: 'JP',  flag: '🇯🇵', label: '日本' },
   { code: 'FR',  flag: '🇫🇷', label: '法国' },
   { code: 'ES',  flag: '🇪🇸', label: '西班牙' },
