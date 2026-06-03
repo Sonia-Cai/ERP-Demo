@@ -2,7 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import type { TableColumnsType } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
-import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons-vue'
+import arrowUpSvg   from '@/assets/icons/arrow-up.svg?raw'
+import arrowDownSvg from '@/assets/icons/arrow-down.svg?raw'
 import tab1ActiveUrl from '@/assets/dashboard/tab1-active.png?url'
 import tab1InactiveUrl from '@/assets/dashboard/tab1-inactive.png?url'
 import tab2ActiveUrl from '@/assets/dashboard/tab2-active.png?url'
@@ -1064,11 +1065,22 @@ const lineupRows = computed<LineupRow[]>(() => {
     ...activeLineupRegions.value.filter(r => r !== 'all'),
     ...activeLineupCountries.value.filter(c => c !== 'all'),
   ]
-  if (activeGeos.length === 0) return LINEUP_ROWS
-  const knownGeos = activeGeos.filter(g => g in GEO_SCALES)
-  if (knownGeos.length === 0) return LINEUP_ROWS
-  const rowSets = knownGeos.map(geo => LINEUP_ROWS.map(row => scaleLineupRow(row, geo)))
-  return aggregateLineupRows(rowSets)
+  const baseRows = (() => {
+    if (activeGeos.length === 0) return LINEUP_ROWS
+    const knownGeos = activeGeos.filter(g => g in GEO_SCALES)
+    if (knownGeos.length === 0) return LINEUP_ROWS
+    const rowSets = knownGeos.map(geo => LINEUP_ROWS.map(row => scaleLineupRow(row, geo)))
+    return aggregateLineupRows(rowSets)
+  })()
+  if (currency.value !== 'usd') return baseRows
+  const cvt = (v: number) => Math.round(v * USD_RATE)
+  return baseRows.map(row => ({
+    ...row,
+    sales:   { v2: cvt(row.sales.v2),   v1: cvt(row.sales.v1),   diff: row.sales.diff   },
+    revenue: { v2: cvt(row.revenue.v2), v1: cvt(row.revenue.v1), diff: row.revenue.diff },
+    profit:  { v2: cvt(row.profit.v2),  v1: cvt(row.profit.v1),  diff: row.profit.diff  },
+    csa:     row.csa != null ? cvt(row.csa) : null,
+  }))
 })
 
 const SUMMARY_TEXT = '本期销量、收入均超额完成目标，但利润未达考核指标，呈现「增收不增利」特征。核心受采购成本上涨、关税及 CSA 合规费用增加影响，叠加广告成本上升，利润率同比下滑 21%。'
@@ -1522,14 +1534,8 @@ const goodSummary = ref({
               <span class="bar-list__pct">{{ it.pctV2.toFixed(2) }}%</span>
               <span class="bar-list__delta">
                 ({{ versionB }}: {{ it.pctV1.toFixed(2) }}%
-                <ArrowUpOutlined
-                  v-if="it.trend === 'up'"
-                  :style="{ color: 'var(--color-success-active)' }"
-                />
-                <ArrowDownOutlined
-                  v-else
-                  :style="{ color: 'var(--color-error-active)' }"
-                />)
+                <span v-if="it.trend === 'up'" v-html="arrowUpSvg" class="bar-list__arrow" />
+                <span v-else v-html="arrowDownSvg" class="bar-list__arrow" />)
               </span>
             </li>
           </ol>
@@ -2374,6 +2380,12 @@ const goodSummary = ref({
   display: inline-flex;
   align-items: center;
   gap: 2px;
+}
+
+.bar-list__arrow {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 /* ===================== Dimension Analysis ===================== */

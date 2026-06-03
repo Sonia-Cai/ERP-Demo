@@ -67,7 +67,7 @@
   --color-error-active:   var(--color-red-7);
   --color-error-disabled: var(--color-red-3);
   --color-error-focus:    var(--color-red-2);
-  --color-error-bg:       var(--color-red-1);
+  --color-error-bg:       var(--color-red-2);
 
   /* ------ Gold / 警告色 ------ */
   --color-gold-1: #FFFBF4;    /* 选中背景色 */
