@@ -253,19 +253,28 @@ function formatKpiDiff(pct: number): string {
   return rounded >= 0 ? `+${rounded}%` : `${rounded}%`
 }
 
+function aggKpiMetrics(slugs: string[], version: VersionKey): ReturnType<typeof getKpiMetric> {
+  if (slugs.length === 1) return getKpiMetric(slugs[0], version)
+  const all = slugs.map(s => getKpiMetric(s, version))
+  const totalRev = all.reduce((s, m) => s + m.revenue, 0)
+  return {
+    sales:      all.reduce((s, m) => s + m.sales, 0),
+    revenue:    totalRev,
+    profit:     all.reduce((s, m) => s + m.profit, 0),
+    profitRate: totalRev > 0 ? +((all.reduce((s, m) => s + m.profitRate * m.revenue, 0) / totalRev).toFixed(2)) : 0,
+    adsRate:    totalRev > 0 ? +((all.reduce((s, m) => s + m.adsRate    * m.revenue, 0) / totalRev).toFixed(2)) : 0,
+  }
+}
+
 const kpiCards = computed(() => {
-  const catSlug = activeCategories.value.length === 1 && activeCategories.value[0] !== 'all'
-    ? activeCategories.value[0]
-    : activeCategories.value.includes('all') ? 'all' : activeCategories.value[0]
+  const slugs = activeCategories.value.includes('all') ? ['all'] : activeCategories.value
   const vA = versionA.value as VersionKey
   const vB = versionB.value as VersionKey
-  const rawA = getKpiMetric(catSlug, vA)
-  const rawB = getKpiMetric(catSlug, vB)
-  const applyRate = (m: typeof rawA) => currency.value === 'usd'
+  const applyRate = (m: ReturnType<typeof getKpiMetric>) => currency.value === 'usd'
     ? { ...m, sales: Math.round(m.sales * USD_RATE), revenue: Math.round(m.revenue * USD_RATE), profit: Math.round(m.profit * USD_RATE) }
     : m
-  const v2 = applyRate(rawA)
-  const v1 = applyRate(rawB)
+  const v2 = applyRate(aggKpiMetrics(slugs, vA))
+  const v1 = applyRate(aggKpiMetrics(slugs, vB))
   const sym = currency.value === 'usd' ? '$' : '¥'
   return KPI_CARDS.map((meta) => {
     const main = v2[meta.key]
@@ -342,9 +351,39 @@ function buildCountryRow(
 const countryRows = computed<CountryRow[]>(() => {
   const vA = versionA.value as VersionKey
   const vB = versionB.value as VersionKey
-  return COUNTRIES.map(({ code, flag }) =>
-    buildCountryRow(code, flag, activeCategorySlug.value, vA, vB),
-  )
+  const slugs = activeCategories.value.includes('all') ? ['all'] : activeCategories.value
+  if (slugs.length === 1) {
+    return COUNTRIES.map(({ code, flag }) => buildCountryRow(code, flag, slugs[0], vA, vB))
+  }
+  const diff = (a: number, b: number) => (b === 0 ? 0 : ((a - b) / b) * 100)
+  return COUNTRIES.map(({ code, flag }) => {
+    const aggMetric = (version: VersionKey) => {
+      const all = slugs.map(s => getCountryKpi(code, s, version))
+      const totalRev = all.reduce((s, m) => s + m.revenue, 0)
+      return applyCurrency({
+        sales:      all.reduce((s, m) => s + m.sales, 0),
+        revenue:    totalRev,
+        profit:     all.reduce((s, m) => s + m.profit, 0),
+        profitRate: totalRev > 0 ? +((all.reduce((s, m) => s + m.profitRate * m.revenue, 0) / totalRev).toFixed(2)) : 0,
+        adsRate:    totalRev > 0 ? +((all.reduce((s, m) => s + m.adsRate    * m.revenue, 0) / totalRev).toFixed(2)) : 0,
+      }, currency.value)
+    }
+    const v2 = aggMetric(vA)
+    const v1 = aggMetric(vB)
+    const adsMoney = slugs.reduce((s, slug) => {
+      let m = getCountryAdsMoney(code, slug, vA)
+      if (currency.value === 'usd') m = Math.round(m * USD_RATE)
+      return s + m
+    }, 0)
+    return {
+      code, flag,
+      sales:      { main: v2.sales,      base: v1.sales,      diffPct: diff(v2.sales, v1.sales) },
+      revenue:    { main: v2.revenue,    base: v1.revenue,    diffPct: diff(v2.revenue, v1.revenue) },
+      profit:     { main: v2.profit,     base: v1.profit,     diffPct: diff(v2.profit, v1.profit) },
+      profitRate: { main: v2.profitRate, base: v1.profitRate },
+      adsRate:    { main: v2.adsRate,    base: v1.adsRate, adsMoney },
+    }
+  })
 })
 
 function formatMoney(n: number): string {
