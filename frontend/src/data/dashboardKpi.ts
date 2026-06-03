@@ -267,7 +267,6 @@ export const CATEGORIES = [
   { slug: 'air-purifier',        label: '空气净化器' },
   { slug: 'water-purifier',      label: '净水器' },
   { slug: 'dehumidifier',        label: '除湿机' },
-  { slug: 'appliance-accessory', label: '家电配件' },
   { slug: 'kitchen-accessory',   label: '厨房配件' },
   { slug: 'smart-kitchen',       label: '智能厨电' },
 ] as const

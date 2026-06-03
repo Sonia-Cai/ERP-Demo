@@ -29,8 +29,8 @@ echarts.use([BarChart, PieChart, GridComponent, TooltipComponent, LegendComponen
 import categoryHeaterUrl from '@/assets/category/heater.png?url'
 import categoryTowerFanUrl from '@/assets/category/tower-fan.png?url'
 import categoryStandingFanUrl from '@/assets/category/standing-fan.png?url'
-import categoryHumidifierUrl from '@/assets/category/humidifier.png?url'
-import categoryAirConditionerUrl from '@/assets/category/air-conditioner.png?url'
+import categoryHumidifierUrl from '@/assets/category/air-conditioner.png?url'
+import categoryAirConditionerUrl from '@/assets/category/humidifier.png?url'
 import categoryCeilingFanUrl from '@/assets/category/ceiling-fan.png?url'
 import categoryCoolingFanUrl from '@/assets/category/cooling-fan.png?url'
 import categoryAirCirculatorUrl from '@/assets/category/air-circulator.png?url'
@@ -39,6 +39,7 @@ import categoryAirPurifierUrl from '@/assets/category/air-purifier.png?url'
 import categoryWaterPurifierUrl from '@/assets/category/water-purifier.png?url'
 import categoryDehumidifierUrl from '@/assets/category/dehumidifier.png?url'
 import categorySmartKitchenUrl from '@/assets/category/smart-kitchen.png?url'
+import categoryKitchenAccessoryUrl from '@/assets/category/kitchen-accessory.png?url'
 import ErpAppShell from '@/components/ErpAppShell.vue'
 import { findThirdNavLabel } from '@/data/navSubTree'
 import tabTitleLineupSvg from '@/assets/dashboard/tab-title-lineup.svg?raw'
@@ -153,6 +154,7 @@ const CATEGORY_ICON_MAP: Record<string, string> = {
   'water-purifier': categoryWaterPurifierUrl,
   'dehumidifier': categoryDehumidifierUrl,
   'smart-kitchen': categorySmartKitchenUrl,
+  'kitchen-accessory': categoryKitchenAccessoryUrl,
 }
 
 const CATEGORY_CHIPS = [
@@ -169,7 +171,6 @@ const CATEGORY_CHIPS = [
   { slug: 'air-purifier', label: '空气净化器' },
   { slug: 'water-purifier', label: '净水器' },
   { slug: 'dehumidifier', label: '除湿机' },
-  { slug: 'appliance-accessory', label: '家电配件' },
   { slug: 'kitchen-accessory', label: '厨房配件' },
   { slug: 'smart-kitchen', label: '智能厨电' },
 ] as const
@@ -550,6 +551,82 @@ const LINEUP_ROWS: LineupRow[] = [
   },
 ]
 
+// ── Per-geo scale table ──────────────────────────────────────────────────────
+// amt: fraction of global amount; rates: additive offset (pp) on top of global %
+const GEO_SCALES: Record<string, { amt: number; rates: Partial<Record<'profitPct'|'adsPct'|'promoPct'|'mc'|'cogs'|'freight'|'tariff'|'storage', number>> }> = {
+  'north-america': { amt: 0.58, rates: { profitPct: -0.4, adsPct:  0.3, promoPct:  0.2 } },
+  'europe':        { amt: 0.32, rates: { profitPct:  1.1, adsPct: -0.8, promoPct: -0.4, mc:  0.5, freight: -0.1 } },
+  'asia':          { amt: 0.06, rates: { profitPct:  0.6, adsPct: -0.3, promoPct: -0.2, freight:  0.3 } },
+  'US':            { amt: 0.52, rates: { profitPct: -0.3, adsPct:  0.5, promoPct:  0.3 } },
+  'CA':            { amt: 0.06, rates: { profitPct:  0.4, adsPct:  0.2, promoPct:  0.1 } },
+  'GB':            { amt: 0.07, rates: { profitPct:  0.9, adsPct: -0.6, promoPct: -0.3, mc:  0.3 } },
+  'DE':            { amt: 0.09, rates: { profitPct:  1.4, adsPct: -1.0, promoPct: -0.5, mc:  0.6, freight: -0.2 } },
+  'FR':            { amt: 0.05, rates: { profitPct:  0.7, adsPct: -0.5, promoPct: -0.2 } },
+  'IT':            { amt: 0.04, rates: { profitPct:  0.5, adsPct: -0.4, promoPct: -0.1 } },
+  'ES':            { amt: 0.04, rates: { profitPct:  0.6, adsPct: -0.3, promoPct: -0.2 } },
+  'JP':            { amt: 0.06, rates: { profitPct:  0.8, adsPct: -0.2, promoPct: -0.3, mc:  0.4, freight:  0.2 } },
+}
+
+function scaleLineupRow(row: LineupRow, geo: string): LineupRow {
+  const scale = GEO_SCALES[geo]
+  if (!scale) return row
+  const a = scale.amt
+  const r = scale.rates
+  const adj = (v: number, k: keyof typeof r) => parseFloat(((v) + (r[k] ?? 0)).toFixed(2))
+  const scaleAmt = (v: number) => Math.round(v * a)
+  const rediff = (v2: number, v1: number) => v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0
+  const sv2 = scaleAmt(row.sales.v2), sv1 = scaleAmt(row.sales.v1)
+  const rv2 = scaleAmt(row.revenue.v2), rv1 = scaleAmt(row.revenue.v1)
+  const pv2 = scaleAmt(row.profit.v2), pv1 = scaleAmt(row.profit.v1)
+  return {
+    ...row,
+    sales:     { v2: sv2, v1: sv1, diff: rediff(sv2, sv1) },
+    revenue:   { v2: rv2, v1: rv1, diff: rediff(rv2, rv1) },
+    profit:    { v2: pv2, v1: pv1, diff: rediff(pv2, pv1) },
+    profitPct: { v2: adj(row.profitPct.v2, 'profitPct'), v1: adj(row.profitPct.v1, 'profitPct'), diff: row.profitPct.diff },
+    adsPct:    { v2: adj(row.adsPct.v2, 'adsPct'),    v1: adj(row.adsPct.v1, 'adsPct'),    diff: row.adsPct.diff },
+    promoPct:  { v2: adj(row.promoPct.v2, 'promoPct'),  v1: adj(row.promoPct.v1, 'promoPct'),  diff: row.promoPct.diff },
+    mc:        { v2: adj(row.mc.v2, 'mc'),        v1: adj(row.mc.v1, 'mc') },
+    cogs:      { v2: adj(row.cogs.v2, 'cogs'),      v1: adj(row.cogs.v1, 'cogs') },
+    freight:   { v2: adj(row.freight.v2, 'freight'),   v1: adj(row.freight.v1, 'freight') },
+    tariff:    { v2: adj(row.tariff.v2, 'tariff'),    v1: adj(row.tariff.v1, 'tariff') },
+    storage:   { v2: adj(row.storage.v2, 'storage'),   v1: adj(row.storage.v1, 'storage') },
+    csa: row.csa != null ? Math.round(row.csa * a) : null,
+  }
+}
+
+function aggregateLineupRows(rowSets: LineupRow[][]): LineupRow[] {
+  if (rowSets.length === 1) return rowSets[0]
+  return LINEUP_ROWS.map((_, i) => {
+    const rows = rowSets.map(s => s[i])
+    const totalRevV2 = rows.reduce((s, r) => s + r.revenue.v2, 0)
+    const totalRevV1 = rows.reduce((s, r) => s + r.revenue.v1, 0)
+    const sumAmt = (k: 'sales' | 'revenue' | 'profit') => {
+      const v2 = rows.reduce((s, r) => s + r[k].v2, 0)
+      const v1 = rows.reduce((s, r) => s + r[k].v1, 0)
+      return { v2, v1, diff: v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0 }
+    }
+    const wavgRate = (k: 'profitPct' | 'adsPct' | 'promoPct') => {
+      const v2 = totalRevV2 > 0 ? rows.reduce((s, r) => s + r[k].v2 * r.revenue.v2, 0) / totalRevV2 : rows[0][k].v2
+      const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + r[k].v1 * r.revenue.v1, 0) / totalRevV1 : rows[0][k].v1
+      return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)), diff: v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0 }
+    }
+    const wavgSimple = (k: 'mc' | 'cogs' | 'freight' | 'tariff' | 'storage') => {
+      const v2 = totalRevV2 > 0 ? rows.reduce((s, r) => s + r[k].v2 * r.revenue.v2, 0) / totalRevV2 : rows[0][k].v2
+      const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + r[k].v1 * r.revenue.v1, 0) / totalRevV1 : rows[0][k].v1
+      return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)) }
+    }
+    return {
+      ...rows[0],
+      sales: sumAmt('sales'), revenue: sumAmt('revenue'), profit: sumAmt('profit'),
+      profitPct: wavgRate('profitPct'), adsPct: wavgRate('adsPct'), promoPct: wavgRate('promoPct'),
+      mc: wavgSimple('mc'), cogs: wavgSimple('cogs'), freight: wavgSimple('freight'),
+      tariff: wavgSimple('tariff'), storage: wavgSimple('storage'),
+      csa: rows.reduce((s, r) => s + (r.csa ?? 0), 0) || null,
+    }
+  })
+}
+
 const lineupTableColumns = [
   { title: '品线', key: 'nameEn', align: 'left' as const, width: 120, fixed: 'left' as const },
   { title: '战略目标', key: 'targets', align: 'left' as const, width: 110 },
@@ -898,46 +975,22 @@ onBeforeUnmount(() => {
 // 品线经营 tab — 地区 / 国家选择器（静态 demo）
 // ---------------------------------------------------------------
 const LINEUP_REGIONS = [
-  { code: 'all',             label: '全部' },
-  { code: 'north-america',   label: '北美' },
-  { code: 'south-america',   label: '南美' },
-  { code: 'central-america', label: '中美洲' },
-  { code: 'caribbean',       label: '加勒比' },
-  { code: 'east-europe',     label: '东欧' },
-  { code: 'west-europe',     label: '西欧' },
-  { code: 'south-europe',    label: '南欧' },
-  { code: 'north-europe',    label: '北欧' },
-  { code: 'central-europe',  label: '中欧' },
-  { code: 'east-asia',       label: '东亚' },
-  { code: 'southeast-asia',  label: '东南亚' },
-  { code: 'south-asia',      label: '南亚' },
-  { code: 'west-asia',       label: '西亚' },
-  { code: 'central-asia',    label: '中亚' },
-  { code: 'north-asia',      label: '北亚' },
-  { code: 'oceania',         label: '大洋洲' },
-  { code: 'antarctica',      label: '南极洲' },
+  { code: 'all',           label: '全部' },
+  { code: 'north-america', label: '北美' },
+  { code: 'europe',        label: '欧洲' },
+  { code: 'asia',          label: '亚洲' },
 ]
 
 const LINEUP_COUNTRIES = [
   { code: 'all', flag: '',   label: '全部' },
   { code: 'US',  flag: '🇺🇸', label: '美国' },
-  { code: 'DE',  flag: '🇩🇪', label: '德国' },
   { code: 'CA',  flag: '🇨🇦', label: '加拿大' },
   { code: 'GB',  flag: '🇬🇧', label: '英国' },
-  { code: 'JP',  flag: '🇯🇵', label: '日本' },
+  { code: 'DE',  flag: '🇩🇪', label: '德国' },
   { code: 'FR',  flag: '🇫🇷', label: '法国' },
-  { code: 'ES',  flag: '🇪🇸', label: '西班牙' },
   { code: 'IT',  flag: '🇮🇹', label: '意大利' },
-  { code: 'SE',  flag: '🇸🇪', label: '瑞典' },
-  { code: 'PL',  flag: '🇵🇱', label: '波兰' },
-  { code: 'IN',  flag: '🇮🇳', label: '印度' },
-  { code: 'NL',  flag: '🇳🇱', label: '荷兰' },
-  { code: 'BE',  flag: '🇧🇪', label: '比利时' },
-  { code: 'AU',  flag: '🇦🇺', label: '澳大利亚' },
-  { code: 'VN',  flag: '🇻🇳', label: '越南' },
-  { code: 'TH',  flag: '🇹🇭', label: '泰国' },
-  { code: 'KH',  flag: '🇰🇭', label: '柬埔寨' },
-  { code: 'PH',  flag: '🇵🇭', label: '菲律宾' },
+  { code: 'ES',  flag: '🇪🇸', label: '西班牙' },
+  { code: 'JP',  flag: '🇯🇵', label: '日本' },
 ]
 
 const activeLineupRegions   = ref<string[]>(['all'])
@@ -951,8 +1004,27 @@ function _toggleGeo(list: Ref<string[]>, code: string, total: number) {
   list.value = next.length === 0 || next.length === total - 1 ? ['all'] : next
 }
 
-function toggleRegion(code: string)  { _toggleGeo(activeLineupRegions,   code, LINEUP_REGIONS.length) }
-function toggleCountry(code: string) { _toggleGeo(activeLineupCountries, code, LINEUP_COUNTRIES.length) }
+function toggleRegion(code: string) {
+  _toggleGeo(activeLineupRegions, code, LINEUP_REGIONS.length)
+  if (!activeLineupRegions.value.includes('all')) activeLineupCountries.value = ['all']
+}
+
+function toggleCountry(code: string) {
+  _toggleGeo(activeLineupCountries, code, LINEUP_COUNTRIES.length)
+  if (!activeLineupCountries.value.includes('all')) activeLineupRegions.value = ['all']
+}
+
+const lineupRows = computed<LineupRow[]>(() => {
+  const activeGeos = [
+    ...activeLineupRegions.value.filter(r => r !== 'all'),
+    ...activeLineupCountries.value.filter(c => c !== 'all'),
+  ]
+  if (activeGeos.length === 0) return LINEUP_ROWS
+  const knownGeos = activeGeos.filter(g => g in GEO_SCALES)
+  if (knownGeos.length === 0) return LINEUP_ROWS
+  const rowSets = knownGeos.map(geo => LINEUP_ROWS.map(row => scaleLineupRow(row, geo)))
+  return aggregateLineupRows(rowSets)
+})
 
 const SUMMARY_TEXT = '本期销量、收入均超额完成目标，但利润未达考核指标，呈现「增收不增利」特征。核心受采购成本上涨、关税及 CSA 合规费用增加影响，叠加广告成本上升，利润率同比下滑 21%。'
 
@@ -1290,7 +1362,7 @@ const goodSummary = ref({
         <a-table
           v-else
           :columns="lineupTableColumns"
-          :data-source="LINEUP_ROWS"
+          :data-source="lineupRows"
           :pagination="false"
           :scroll="{ x: 'max-content' }"
           row-key="key"
@@ -1869,9 +1941,15 @@ const goodSummary = ref({
   border: none;
 }
 
+.country-kpi-table :deep(.ant-table-header) {
+  border-bottom: none !important;
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+}
+
 .country-kpi-table :deep(.ant-table-thead > tr > th) {
   background: var(--color-white) !important;
-  border-bottom: 1px solid var(--color-gray-3);
+  border-bottom: 1px solid var(--color-gray-3) !important;
   height: 36px;
   padding: 0 var(--spacing-base);
   font-size: var(--font-size-regular);
@@ -1902,6 +1980,11 @@ const goodSummary = ref({
 }
 
 .country-kpi-table :deep(.ant-table-tbody > tr:first-child > td) {
+  border-top: none !important;
+}
+
+/* scroll.x 时 AntD 插入 measure-row 作为 first-child，真实第一行需单独清除 */
+.country-kpi-table :deep(.ant-table-tbody > tr.ant-table-measure-row + tr > td) {
   border-top: none !important;
 }
 
@@ -2120,7 +2203,7 @@ const goodSummary = ref({
 }
 
 .kpi-card__diff--up {
-  background: var(--color-success-bg);
+  background: #B9EEB4;
 }
 
 .kpi-card__diff--down {
