@@ -1014,6 +1014,12 @@ function toggleCountry(code: string) {
   if (!activeLineupCountries.value.includes('all')) activeLineupRegions.value = ['all']
 }
 
+const showTargets = computed(() =>
+  activeLineupRegions.value.includes('all') &&
+  activeLineupCountries.value.length === 1 &&
+  !activeLineupCountries.value.includes('all'),
+)
+
 const lineupRows = computed<LineupRow[]>(() => {
   const activeGeos = [
     ...activeLineupRegions.value.filter(r => r !== 'all'),
@@ -1379,7 +1385,7 @@ const goodSummary = ref({
             <!-- 战略目标 tags -->
             <template v-else-if="column.key === 'targets'">
               <div class="lineup-targets-cell">
-                <template v-if="record.targets.length > 0">
+                <template v-if="showTargets && record.targets.length > 0">
                   <span
                     v-for="tag in record.targets"
                     :key="tag"
