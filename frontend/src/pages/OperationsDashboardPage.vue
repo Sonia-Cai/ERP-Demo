@@ -188,7 +188,20 @@ const activeAnalysisTab = ref<AnalysisTab>('overview')
 const versionA = ref<string>('2026V2')
 const versionB = ref<string>('2026V1')
 const currency = ref<'origin' | 'usd'>('origin')
+const showH2Only = ref(false)
 const activeCategories = ref<string[]>(['all'])
+
+// 下半年数据约占全年 55%（取暖/风扇品类 H2 占比偏高）
+const H2_FACTOR = 0.55
+function applyH2<T extends { sales: number; revenue: number; profit: number; profitRate: number; adsRate: number }>(m: T): T {
+  if (!showH2Only.value) return m
+  return {
+    ...m,
+    sales:   Math.round(m.sales   * H2_FACTOR),
+    revenue: Math.round(m.revenue * H2_FACTOR),
+    profit:  Math.round(m.profit  * H2_FACTOR),
+  }
+}
 
 function isCategoryActive(slug: string): boolean {
   return activeCategories.value.includes(slug)
@@ -274,8 +287,8 @@ const kpiCards = computed(() => {
   const applyRate = (m: ReturnType<typeof getKpiMetric>) => currency.value === 'usd'
     ? { ...m, sales: Math.round(m.sales * USD_RATE), revenue: Math.round(m.revenue * USD_RATE), profit: Math.round(m.profit * USD_RATE) }
     : m
-  const v2 = applyRate(aggKpiMetrics(slugs, vA))
-  const v1 = applyRate(aggKpiMetrics(slugs, vB))
+  const v2 = applyRate(applyH2(aggKpiMetrics(slugs, vA)))
+  const v1 = applyRate(applyH2(aggKpiMetrics(slugs, vB)))
   const sym = currency.value === 'usd' ? '$' : '¥'
   return KPI_CARDS.map((meta) => {
     const main = v2[meta.key]
@@ -333,11 +346,12 @@ function buildCountryRow(
   vA: VersionKey,
   vB: VersionKey,
 ): CountryRow {
-  const v2 = applyCurrency(getCountryKpi(code, catSlug, vA), currency.value)
-  const v1 = applyCurrency(getCountryKpi(code, catSlug, vB), currency.value)
+  const v2 = applyH2(applyCurrency(getCountryKpi(code, catSlug, vA), currency.value))
+  const v1 = applyH2(applyCurrency(getCountryKpi(code, catSlug, vB), currency.value))
   const diff = (a: number, b: number) => (b === 0 ? 0 : ((a - b) / b) * 100)
   let adsMoney = getCountryAdsMoney(code, catSlug, vA)
   if (currency.value === 'usd') adsMoney = Math.round(adsMoney * USD_RATE)
+  if (showH2Only.value) adsMoney = Math.round(adsMoney * H2_FACTOR)
   return {
     code,
     flag,
@@ -369,13 +383,14 @@ const countryRows = computed<CountryRow[]>(() => {
         adsRate:    totalRev > 0 ? +((all.reduce((s, m) => s + m.adsRate    * m.revenue, 0) / totalRev).toFixed(2)) : 0,
       }, currency.value)
     }
-    const v2 = aggMetric(vA)
-    const v1 = aggMetric(vB)
-    const adsMoney = slugs.reduce((s, slug) => {
+    const v2 = applyH2(aggMetric(vA))
+    const v1 = applyH2(aggMetric(vB))
+    let adsMoney = slugs.reduce((s, slug) => {
       let m = getCountryAdsMoney(code, slug, vA)
       if (currency.value === 'usd') m = Math.round(m * USD_RATE)
       return s + m
     }, 0)
+    if (showH2Only.value) adsMoney = Math.round(adsMoney * H2_FACTOR)
     return {
       code, flag,
       sales:      { main: v2.sales,      base: v1.sales,      diffPct: diff(v2.sales, v1.sales) },
@@ -806,8 +821,8 @@ const dimensionLeftCards = computed(() => {
   const catSlug = activeCategorySlug.value
   const vA = versionA.value as VersionKey
   const vB = versionB.value as VersionKey
-  const v2 = applyCurrency(getKpiByCategoryVersion(catSlug, vA), currency.value)
-  const v1 = applyCurrency(getKpiByCategoryVersion(catSlug, vB), currency.value)
+  const v2 = applyH2(applyCurrency(getKpiByCategoryVersion(catSlug, vA), currency.value))
+  const v1 = applyH2(applyCurrency(getKpiByCategoryVersion(catSlug, vB), currency.value))
   const symbol = currency.value === 'usd' ? '$' : '¥'
 
   const buildCard = (key: DimensionKpiKey, label: string) => {
@@ -1067,6 +1082,43 @@ const showTargets = computed(() =>
   !activeLineupCountries.value.includes('all'),
 )
 
+function buildLineupTotal(rows: LineupRow[]): LineupRow {
+  const sum   = (fn: (r: LineupRow) => number) => rows.reduce((s, r) => s + fn(r), 0)
+  const totalRevV2 = sum(r => r.revenue.v2)
+  const totalRevV1 = sum(r => r.revenue.v1)
+  const wavg = (fn: (r: LineupRow) => { v2: number; v1: number; diff: number }) => {
+    const v2 = totalRevV2 > 0 ? rows.reduce((s, r) => s + fn(r).v2 * r.revenue.v2, 0) / totalRevV2 : 0
+    const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + fn(r).v1 * r.revenue.v1, 0) / totalRevV1 : 0
+    const diff = v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0
+    return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)), diff }
+  }
+  const wavgSimple = (fn: (r: LineupRow) => { v2: number; v1: number }) => {
+    const v2 = totalRevV2 > 0 ? rows.reduce((s, r) => s + fn(r).v2 * r.revenue.v2, 0) / totalRevV2 : 0
+    const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + fn(r).v1 * r.revenue.v1, 0) / totalRevV1 : 0
+    return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)) }
+  }
+  const rediff = (v2: number, v1: number) => v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0
+  const sv2 = sum(r => r.sales.v2),   sv1 = sum(r => r.sales.v1)
+  const rv2 = totalRevV2,             rv1 = totalRevV1
+  const pv2 = sum(r => r.profit.v2),  pv1 = sum(r => r.profit.v1)
+  return {
+    key: '__total__', nameEn: 'Total', targets: [],
+    ms: { v2: null, v1: null },
+    sales:     { v2: sv2, v1: sv1, diff: rediff(sv2, sv1) },
+    revenue:   { v2: rv2, v1: rv1, diff: rediff(rv2, rv1) },
+    profit:    { v2: pv2, v1: pv1, diff: rediff(pv2, pv1) },
+    profitPct: wavg(r => r.profitPct),
+    adsPct:    wavg(r => r.adsPct),
+    promoPct:  wavg(r => r.promoPct),
+    mc:        wavgSimple(r => r.mc),
+    cogs:      wavgSimple(r => r.cogs),
+    freight:   wavgSimple(r => r.freight),
+    tariff:    wavgSimple(r => r.tariff),
+    storage:   wavgSimple(r => r.storage),
+    csa: rows.reduce((s, r) => s + (r.csa ?? 0), 0) || null,
+  }
+}
+
 const lineupRows = computed<LineupRow[]>(() => {
   const activeGeos = [
     ...activeLineupRegions.value.filter(r => r !== 'all'),
@@ -1079,8 +1131,15 @@ const lineupRows = computed<LineupRow[]>(() => {
     const rowSets = knownGeos.map(geo => LINEUP_ROWS.map(row => scaleLineupRow(row, geo)))
     return aggregateLineupRows(rowSets)
   })()
-  if (currency.value !== 'usd') return baseRows
-  const cvt = (v: number) => Math.round(v * USD_RATE)
+  const usd = currency.value === 'usd'
+  const h2  = showH2Only.value
+  if (!usd && !h2) return baseRows
+  const cvt = (v: number) => {
+    let r = v
+    if (usd) r = Math.round(r * USD_RATE)
+    if (h2)  r = Math.round(r * H2_FACTOR)
+    return r
+  }
   return baseRows.map(row => ({
     ...row,
     sales:   { v2: cvt(row.sales.v2),   v1: cvt(row.sales.v1),   diff: row.sales.diff   },
@@ -1089,6 +1148,8 @@ const lineupRows = computed<LineupRow[]>(() => {
     csa:     row.csa != null ? cvt(row.csa) : null,
   }))
 })
+
+const lineupRowsTotal = computed(() => buildLineupTotal(lineupRows.value))
 
 const SUMMARY_TEXT = '本期销量、收入均超额完成目标，但利润未达考核指标，呈现「增收不增利」特征。核心受采购成本上涨、关税及 CSA 合规费用增加影响，叠加广告成本上升，利润率同比下滑 21%。'
 
@@ -1259,8 +1320,11 @@ const goodSummary = ref({
                     class="analysis-panel__version-select"
                     :options="versionSelectOptions"
                   />
+                  <a-checkbox v-model:checked="showH2Only" class="analysis-panel__h2-checkbox">
+                    仅查看下半年数据
+                  </a-checkbox>
                 </div>
-                <a-radio-group
+                <a-segmented
                   v-model:value="currency"
                   class="analysis-panel__currency"
                   :options="CURRENCY_OPTIONS"
@@ -1381,6 +1445,7 @@ const goodSummary = ref({
           :columns="countryColumns"
           :data-source="countryRows"
           :pagination="false"
+          :sticky="{ offsetHeader: 0 }"
           row-key="code"
           size="middle"
         >
@@ -1433,6 +1498,7 @@ const goodSummary = ref({
           :data-source="lineupRows"
           :pagination="false"
           :scroll="{ x: 'max-content' }"
+          :sticky="{ offsetHeader: 0 }"
           row-key="key"
           size="middle"
         >
@@ -1514,6 +1580,49 @@ const goodSummary = ref({
               </div>
             </template>
           </template>
+
+          <template #summary>
+            <a-table-summary fixed="top">
+              <a-table-summary-row class="lineup-total-row">
+                <a-table-summary-cell :index="0" fixed="left">
+                  <div class="lineup-name-cell"><span class="lineup-name-cell__name">Total</span></div>
+                </a-table-summary-cell>
+                <a-table-summary-cell :index="1"><span class="lineup-targets-cell__dash">—</span></a-table-summary-cell>
+                <a-table-summary-cell :index="2">
+                  <div class="pct-cell">
+                    <div class="pct-cell__main">—</div>
+                    <div class="pct-cell__base">—</div>
+                  </div>
+                </a-table-summary-cell>
+                <a-table-summary-cell v-for="(key, i) in (['sales','revenue','profit'] as const)" :key="key" :index="3+i">
+                  <div class="money-cell">
+                    <div class="money-cell__main">{{ formatMoney(lineupRowsTotal[key].v2) }}</div>
+                    <div class="money-cell__base">{{ formatMoney(lineupRowsTotal[key].v1) }}</div>
+                    <span class="diff-pill" :class="lineupRowsTotal[key].diff >= 0 ? 'diff-pill--up' : 'diff-pill--down'">{{ formatRowDiff(lineupRowsTotal[key].diff) }}</span>
+                  </div>
+                </a-table-summary-cell>
+                <a-table-summary-cell v-for="(key, i) in (['profitPct','adsPct','promoPct'] as const)" :key="key" :index="6+i">
+                  <div class="pct-cell">
+                    <div class="pct-cell__main">{{ lineupRowsTotal[key].v2.toFixed(2) }}%</div>
+                    <div class="pct-cell__base">{{ lineupRowsTotal[key].v1.toFixed(2) }}%</div>
+                    <span class="diff-pill" :class="lineupRowsTotal[key].diff >= 0 ? 'diff-pill--up' : 'diff-pill--down'">{{ formatRowDiff(lineupRowsTotal[key].diff) }}</span>
+                  </div>
+                </a-table-summary-cell>
+                <a-table-summary-cell v-for="(key, i) in (['mc','cogs','freight','tariff','storage'] as const)" :key="key" :index="9+i">
+                  <div class="pct-cell">
+                    <div class="pct-cell__main">{{ lineupRowsTotal[key].v2.toFixed(2) }}%</div>
+                    <div class="pct-cell__base">{{ lineupRowsTotal[key].v1.toFixed(2) }}%</div>
+                  </div>
+                </a-table-summary-cell>
+                <a-table-summary-cell :index="14">
+                  <div class="money-cell">
+                    <div class="money-cell__main">{{ lineupRowsTotal.csa ? formatMoney(lineupRowsTotal.csa) : '0' }}</div>
+                  </div>
+                </a-table-summary-cell>
+              </a-table-summary-row>
+            </a-table-summary>
+          </template>
+
         </a-table>
         </div>
       </div>
@@ -1837,13 +1946,16 @@ const goodSummary = ref({
   line-height: 1;
 }
 
-.analysis-panel__currency :deep(.ant-radio-checked .ant-radio-inner) {
-  border-color: var(--color-brand-6);
-  background-color: var(--color-brand-6);
+.analysis-panel__h2-checkbox {
+  margin-left: 12px;
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.analysis-panel__currency :deep(.ant-radio-checked .ant-radio-inner::after) {
-  background-color: var(--color-bg-container);
+.analysis-panel__currency {
+  flex-shrink: 0;
 }
 
 .analysis-panel__categories {
@@ -2009,7 +2121,39 @@ const goodSummary = ref({
 }
 
 .country-kpi-table__title--lineup {
-  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--color-white);
+  /* 把 card 的 padding-top 纳入 sticky 区域，防止滚动时顶部露白 */
+  margin-top: calc(-1 * var(--spacing-base));
+  padding-top: var(--spacing-base);
+  margin-bottom: 0;
+}
+
+/* Total 行主值加粗，次要值（灰色）不加粗 */
+.country-kpi-table :deep(.lineup-total-row > td) {
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-white);
+}
+
+.country-kpi-table :deep(.ant-table-summary .money-cell__base),
+.country-kpi-table :deep(.ant-table-summary .pct-cell__base) {
+  font-weight: var(--font-weight-regular);
+}
+
+/* summary 容器与 tbody 之间的分割线统一为 gray-3 */
+.country-kpi-table :deep(.ant-table-summary) {
+  border-top: none !important;
+  box-shadow: none !important;
+}
+.country-kpi-table :deep(.ant-table-summary table) {
+  border-top: none !important;
+}
+.country-kpi-table :deep(.ant-table-summary tr td) {
+  border-bottom: 1px solid var(--color-gray-3) !important;
+  vertical-align: top;
+  padding: var(--spacing-base);
 }
 
 .country-kpi-table :deep(.ant-table) {
@@ -2231,6 +2375,18 @@ const goodSummary = ref({
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 1250px) {
+  .kpi-card {
+    height: auto;
+    min-height: 118px;
+    overflow: visible;
+  }
+
+  .kpi-card__main {
+    width: 100%;
+  }
 }
 
 .kpi-card::before {
