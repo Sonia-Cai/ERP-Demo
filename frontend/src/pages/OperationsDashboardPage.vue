@@ -1370,7 +1370,7 @@ const goodSummary = ref({
       <div class="country-kpi-table">
         <div
           class="country-kpi-table__title"
-          :class="{ 'country-kpi-table__title--lineup': activeAnalysisTab === 'lineup' }"
+          :style="activeAnalysisTab === 'lineup' ? { marginBottom: '0px' } : {}"
         >
           {{ activeAnalysisTab === 'lineup' ? '品线经营指标' : '各国2026 - 经营指标' }}
         </div>
@@ -2029,8 +2029,8 @@ const goodSummary = ref({
 .country-kpi-table :deep(.ant-table-thead > tr > th) {
   background: var(--color-white) !important;
   border-bottom: 1px solid var(--color-gray-3) !important;
-  height: 36px;
-  padding: 0 var(--spacing-base);
+  height: auto;
+  padding: 11px var(--spacing-base) 3px;
   font-size: var(--font-size-regular);
   line-height: var(--line-height-regular);
   font-weight: var(--font-weight-semibold);
