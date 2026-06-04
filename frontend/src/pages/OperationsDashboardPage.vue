@@ -823,12 +823,16 @@ const dimensionLeftCards = computed(() => {
       isMoney
         ? `${symbol}${Math.round(n).toLocaleString('en-US')}`
         : `${n.toFixed(2)}%`
+    const diffPct = target === 0 ? 0 : ((main - target) / Math.abs(target)) * 100
     return {
       key,
       label,
-      mainText:   format(main),
-      targetText: isMoney ? Math.round(target).toLocaleString('en-US') : `${target.toFixed(2)}%`,
+      mainText:    format(main),
+      targetText:  isMoney ? Math.round(target).toLocaleString('en-US') : `${target.toFixed(2)}%`,
       dotEmoji,
+      diffPct,
+      diffPositive: diffPct >= 0,
+      diffText: (diffPct >= 0 ? '+' : '') + diffPct.toFixed(0) + '%',
     }
   }
 
@@ -844,8 +848,11 @@ const dimensionChartData = computed(() => {
   const vA = versionA.value as VersionKey
   const vB = versionB.value as VersionKey
   if (dimensionAxis.value === 'by-lineup') {
+    const activeSlugs = activeCategories.value.includes('all')
+      ? null
+      : new Set(activeCategories.value)
     return CATEGORIES
-      .filter((c) => c.slug !== 'all')
+      .filter((c) => c.slug !== 'all' && (!activeSlugs || activeSlugs.has(c.slug)))
       .map(({ slug }) => {
         const v2 = applyCurrency(getKpiByCategoryVersion(slug, vA), currency.value)
         const v1 = applyCurrency(getKpiByCategoryVersion(slug, vB), currency.value)
@@ -913,7 +920,7 @@ function renderDimensionChart() {
         const v2 = bars[0]?.value ?? 0
         const v1 = bars[1]?.value ?? 0
         const growth = v1 === 0 ? 0 : ((v2 - v1) / v1) * 100
-        const pillBg = growth >= 0 ? '#B9EEB4' : '#FFDEE0'
+        const pillBg = growth >= 0 ? '#B9EEB4' : '#FFBDBF'
         const pillText = growth >= 0 ? `+${growth.toFixed(0)}%` : `${growth.toFixed(0)}%`
         const pill = `<span style="display:inline-block;background:${pillBg};border-radius:30px;padding:1px 8px;font-size:11px;color:#323B4B;margin-left:6px;vertical-align:middle;">${pillText}</span>`
         let html = `<div style="font-weight:500;margin-bottom:6px;">${bars[0].axisValue}${pill}</div>`
@@ -1361,7 +1368,10 @@ const goodSummary = ref({
       </div>
 
       <div class="country-kpi-table">
-        <div class="country-kpi-table__title">
+        <div
+          class="country-kpi-table__title"
+          :class="{ 'country-kpi-table__title--lineup': activeAnalysisTab === 'lineup' }"
+        >
           {{ activeAnalysisTab === 'lineup' ? '品线经营指标' : '各国2026 - 经营指标' }}
         </div>
 
@@ -1416,8 +1426,9 @@ const goodSummary = ref({
         </a-table>
 
         <!-- 品线经营 tab：品线经营指标 -->
+        <div v-else class="lineup-table-wrap">
         <a-table
-          v-else
+          class="lineup-table"
           :columns="lineupTableColumns"
           :data-source="lineupRows"
           :pagination="false"
@@ -1504,6 +1515,7 @@ const goodSummary = ref({
             </template>
           </template>
         </a-table>
+        </div>
       </div>
 
       <div v-show="activeAnalysisTab === 'overview'" class="profit-breakdown">
@@ -1568,12 +1580,18 @@ const goodSummary = ref({
               @click="dimensionMetric = card.key"
             >
               <div class="dimension-card__head">
-                <span class="dimension-card__label">{{ card.label }}</span>
+                <span class="dimension-card__label">{{ versionA }} {{ card.label }}</span>
                 <span class="dimension-card__dot">{{ card.dotEmoji }}</span>
               </div>
-              <div class="dimension-card__main">{{ card.mainText }}</div>
+              <div class="dimension-card__main-row">
+                <span class="dimension-card__main">{{ card.mainText }}</span>
+                <span
+                  class="dimension-card__diff"
+                  :class="card.diffPositive ? 'dimension-card__diff--up' : 'dimension-card__diff--down'"
+                >{{ card.diffText }}</span>
+              </div>
               <div class="dimension-card__target">
-                <span class="dimension-card__target-label">目标值</span>
+                <span class="dimension-card__target-label">{{ versionB }}</span>
                 <span class="dimension-card__target-value">{{ card.targetText }}</span>
               </div>
             </button>
@@ -1977,6 +1995,8 @@ const goodSummary = ref({
   background: var(--color-white);
   border-radius: var(--radius-card);
   padding: var(--spacing-base);
+  display: flex;
+  flex-direction: column;
 }
 
 .country-kpi-table__title {
@@ -1988,8 +2008,16 @@ const goodSummary = ref({
   padding-bottom: 0;
 }
 
+.country-kpi-table__title--lineup {
+  margin-bottom: 10px;
+}
+
 .country-kpi-table :deep(.ant-table) {
   border: none;
+}
+
+.lineup-table-wrap {
+  padding-top: 8px;
 }
 
 .country-kpi-table :deep(.ant-table-header) {
@@ -2477,13 +2505,39 @@ const goodSummary = ref({
   flex-shrink: 0;
 }
 
+.dimension-card__main-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--spacing-tight);
+  padding: 0 var(--spacing-base);
+}
+
 .dimension-card__main {
   font-size: 20px;
   line-height: 30px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-gray-11);
-  margin-top: var(--spacing-tight);
-  padding: 0 var(--spacing-base);
+}
+
+.dimension-card__diff {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 1px 8px;
+  border-radius: 30px;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-11);
+  flex-shrink: 0;
+}
+
+.dimension-card__diff--up {
+  background: #B9EEB4;
+}
+
+.dimension-card__diff--down {
+  background: #FFBDBF;
 }
 
 .dimension-card__target {
@@ -2505,7 +2559,7 @@ const goodSummary = ref({
 .dimension-card__target-value {
   font-size: var(--font-size-regular);
   line-height: var(--line-height-regular);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 400;
   color: var(--color-gray-11);
 }
 
