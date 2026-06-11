@@ -746,10 +746,10 @@ const lineupTableColumns = computed(() => {
   ]
   if (isUSOnly.value) {
     cols.push(
-      { title: '基础关税+附加费%(毛收)', key: 'basicTariff', align: 'left' as const, width: 180 },
-      { title: '301%(毛收)', key: 's301', align: 'left' as const, width: 105 },
-      { title: '对等关税%(毛收)', key: 'equalTariff', align: 'left' as const, width: 130 },
-      { title: '钢铁铝加征关税%(毛收)', key: 'steelAluTariff', align: 'left' as const, width: 175 },
+      { title: '基础关税％（毛收）', key: 'basicTariff', align: 'left' as const, width: 150 },
+      { title: '301关税％（毛收）', key: 's301', align: 'left' as const, width: 130 },
+      { title: '122关税％（毛收）', key: 'equalTariff', align: 'left' as const, width: 130 },
+      { title: '钢铁铝铜关税％（毛收）', key: 'steelAluTariff', align: 'left' as const, width: 160 },
     )
   }
   cols.push(
