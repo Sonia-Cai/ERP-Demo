@@ -432,6 +432,10 @@ type LineupRow = {
   tariff: { v2: number; v1: number }
   storage: { v2: number; v1: number }
   csa: number | null
+  basicTariff: { v2: number; v1: number }
+  s301: { v2: number; v1: number }
+  equalTariff: { v2: number; v1: number }
+  steelAluTariff: { v2: number; v1: number }
 }
 
 const LINEUP_ROWS: LineupRow[] = [
@@ -447,6 +451,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 39.94, v1: 39.37 }, cogs: { v2: 28.30, v1: 27.27 },
     freight: { v2: 4.21, v1: 4.35 }, tariff: { v2: 7.43, v1: 7.71 },
     storage: { v2: 3.60, v1: 3.78 }, csa: 1287650,
+    basicTariff: { v2: 2.80, v1: 2.90 }, s301: { v2: 1.78, v1: 2.10 },
+    equalTariff: { v2: 2.52, v1: 2.38 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'evap-air-cooler', nameEn: 'Evaporative Air Cooler', targets: [],
@@ -460,6 +466,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 40.22, v1: 40.76 }, cogs: { v2: 28.93, v1: 28.28 },
     freight: { v2: 3.72, v1: 4.09 }, tariff: { v2: 7.57, v1: 8.38 },
     storage: { v2: 3.60, v1: 3.05 }, csa: 0,
+    basicTariff: { v2: 2.90, v1: 3.00 }, s301: { v2: 2.00, v1: 2.50 },
+    equalTariff: { v2: 2.34, v1: 2.55 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'space-heater', nameEn: 'Space Heater', targets: ['节点BS', '价格第一'],
@@ -473,6 +481,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 44.20, v1: 41.04 }, cogs: { v2: 33.12, v1: 32.21 },
     freight: { v2: 2.43, v1: 2.60 }, tariff: { v2: 8.66, v1: 6.24 },
     storage: { v2: 3.00, v1: 2.46 }, csa: 0,
+    basicTariff: { v2: 3.10, v1: 2.80 }, s301: { v2: 2.60, v1: 1.80 },
+    equalTariff: { v2: 2.63, v1: 1.31 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'humidifier', nameEn: 'Humidifier', targets: ['节点BS', '价格第一'],
@@ -486,6 +496,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 42.83, v1: 43.84 }, cogs: { v2: 31.25, v1: 32.78 },
     freight: { v2: 3.49, v1: 3.57 }, tariff: { v2: 8.09, v1: 7.07 },
     storage: { v2: 3.59, v1: 3.18 }, csa: 271804,
+    basicTariff: { v2: 2.70, v1: 2.70 }, s301: { v2: 2.50, v1: 2.20 },
+    equalTariff: { v2: 2.56, v1: 1.84 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'poly-pedestal-fan', nameEn: 'Poly Pedestal Fan', targets: ['节点BS', '价格第一'],
@@ -499,6 +511,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 44.23, v1: 44.90 }, cogs: { v2: 31.07, v1: 31.57 },
     freight: { v2: 5.10, v1: 5.45 }, tariff: { v2: 8.06, v1: 7.87 },
     storage: { v2: 3.60, v1: 3.78 }, csa: 148494,
+    basicTariff: { v2: 2.80, v1: 2.80 }, s301: { v2: 2.30, v1: 2.20 },
+    equalTariff: { v2: 2.63, v1: 2.54 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'table-aircirculator', nameEn: 'Table Aircirculator Fan', targets: ['价格第三'],
@@ -512,6 +526,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 41.38, v1: 43.71 }, cogs: { v2: 29.66, v1: 30.91 },
     freight: { v2: 3.93, v1: 4.22 }, tariff: { v2: 7.79, v1: 8.58 },
     storage: { v2: 3.60, v1: 4.06 }, csa: 423120,
+    basicTariff: { v2: 2.60, v1: 2.70 }, s301: { v2: 2.20, v1: 2.50 },
+    equalTariff: { v2: 2.66, v1: 3.05 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'ceiling-fan', nameEn: 'Ceiling Fan', targets: [],
@@ -525,6 +541,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 44.68, v1: 43.95 }, cogs: { v2: 32.45, v1: 32.89 },
     freight: { v2: 3.65, v1: 3.78 }, tariff: { v2: 8.58, v1: 7.29 },
     storage: { v2: 3.00, v1: 2.96 }, csa: 0,
+    basicTariff: { v2: 2.80, v1: 2.80 }, s301: { v2: 2.50, v1: 2.30 },
+    equalTariff: { v2: 2.95, v1: 1.86 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'portable-ac', nameEn: 'Portable Air Conditio...', targets: ['价格第二'],
@@ -538,6 +556,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 54.68, v1: 56.92 }, cogs: { v2: 41.85, v1: 38.32 },
     freight: { v2: 2.94, v1: 3.10 }, tariff: { v2: 9.89, v1: 15.49 },
     storage: { v2: 3.00, v1: 2.50 }, csa: 0,
+    basicTariff: { v2: 3.50, v1: 3.80 }, s301: { v2: 3.30, v1: 5.80 },
+    equalTariff: { v2: 2.76, v1: 5.56 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'oil-heater', nameEn: 'Oil Heater', targets: [],
@@ -551,6 +571,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 49.29, v1: 30.01 }, cogs: { v2: 30.01, v1: 0 },
     freight: { v2: 4.95, v1: 0 }, tariff: { v2: 14.33, v1: 0 },
     storage: { v2: 3.50, v1: 0 }, csa: 0,
+    basicTariff: { v2: 3.20, v1: 0 }, s301: { v2: 5.90, v1: 0 },
+    equalTariff: { v2: 4.90, v1: 0 }, steelAluTariff: { v2: 0.33, v1: 0 },
   },
   {
     key: 'milk-frother', nameEn: 'Milk Frother', targets: [],
@@ -564,6 +586,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 42.10, v1: 40.96 }, cogs: { v2: 32.74, v1: 31.47 },
     freight: { v2: 0.93, v1: 1.20 }, tariff: { v2: 8.43, v1: 8.26 },
     storage: { v2: 3.00, v1: 2.82 }, csa: 0,
+    basicTariff: { v2: 2.80, v1: 2.80 }, s301: { v2: 2.60, v1: 2.60 },
+    equalTariff: { v2: 2.70, v1: 2.53 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'air-purifier', nameEn: 'Air Purifier', targets: [],
@@ -577,6 +601,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 40.39, v1: 33.44 }, cogs: { v2: 30.85, v1: 23.95 },
     freight: { v2: 3.06, v1: 1.07 }, tariff: { v2: 6.48, v1: 1.86 },
     storage: { v2: 3.05, v1: 3.05 }, csa: 0,
+    basicTariff: { v2: 2.00, v1: 1.40 }, s301: { v2: 2.15, v1: 0.13 },
+    equalTariff: { v2: 2.00, v1: 0.00 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'dehumidifier', nameEn: 'Dehumidifier', targets: [],
@@ -590,6 +616,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 46.91, v1: 49.27 }, cogs: { v2: 35.37, v1: 35.75 },
     freight: { v2: 2.39, v1: 2.06 }, tariff: { v2: 9.16, v1: 11.45 },
     storage: { v2: 3.00, v1: 3.00 }, csa: 0,
+    basicTariff: { v2: 2.90, v1: 3.00 }, s301: { v2: 3.30, v1: 4.80 },
+    equalTariff: { v2: 2.63, v1: 3.32 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
   {
     key: 'water-filter', nameEn: 'Water Filter', targets: ['价格第二'],
@@ -603,6 +631,8 @@ const LINEUP_ROWS: LineupRow[] = [
     mc: { v2: 41.66, v1: 37.13 }, cogs: { v2: 30.30, v1: 26.37 },
     freight: { v2: 1.84, v1: 2.47 }, tariff: { v2: 9.53, v1: 7.97 },
     storage: { v2: 3.00, v1: 3.08 }, csa: 0,
+    basicTariff: { v2: 2.60, v1: 2.60 }, s301: { v2: 3.70, v1: 3.00 },
+    equalTariff: { v2: 2.90, v1: 2.04 }, steelAluTariff: { v2: 0.33, v1: 0.33 },
   },
 ]
 
@@ -647,6 +677,10 @@ function scaleLineupRow(row: LineupRow, geo: string): LineupRow {
     tariff:    { v2: adj(row.tariff.v2, 'tariff'),    v1: adj(row.tariff.v1, 'tariff') },
     storage:   { v2: adj(row.storage.v2, 'storage'),   v1: adj(row.storage.v1, 'storage') },
     csa: row.csa != null ? Math.round(row.csa * a) : null,
+    basicTariff:    { v2: row.basicTariff.v2,    v1: row.basicTariff.v1    },
+    s301:           { v2: row.s301.v2,           v1: row.s301.v1           },
+    equalTariff:    { v2: row.equalTariff.v2,    v1: row.equalTariff.v1    },
+    steelAluTariff: { v2: row.steelAluTariff.v2, v1: row.steelAluTariff.v1 },
   }
 }
 
@@ -666,7 +700,7 @@ function aggregateLineupRows(rowSets: LineupRow[][]): LineupRow[] {
       const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + r[k].v1 * r.revenue.v1, 0) / totalRevV1 : rows[0][k].v1
       return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)), diff: v1 !== 0 ? parseFloat(((v2 - v1) / Math.abs(v1) * 100).toFixed(2)) : 0 }
     }
-    const wavgSimple = (k: 'mc' | 'cogs' | 'freight' | 'tariff' | 'storage') => {
+    const wavgSimple = (k: 'mc' | 'cogs' | 'freight' | 'tariff' | 'storage' | 'basicTariff' | 's301' | 'equalTariff' | 'steelAluTariff') => {
       const v2 = totalRevV2 > 0 ? rows.reduce((s, r) => s + r[k].v2 * r.revenue.v2, 0) / totalRevV2 : rows[0][k].v2
       const v1 = totalRevV1 > 0 ? rows.reduce((s, r) => s + r[k].v1 * r.revenue.v1, 0) / totalRevV1 : rows[0][k].v1
       return { v2: parseFloat(v2.toFixed(2)), v1: parseFloat(v1.toFixed(2)) }
@@ -678,27 +712,52 @@ function aggregateLineupRows(rowSets: LineupRow[][]): LineupRow[] {
       mc: wavgSimple('mc'), cogs: wavgSimple('cogs'), freight: wavgSimple('freight'),
       tariff: wavgSimple('tariff'), storage: wavgSimple('storage'),
       csa: rows.reduce((s, r) => s + (r.csa ?? 0), 0) || null,
+      basicTariff:    wavgSimple('basicTariff'),
+      s301:           wavgSimple('s301'),
+      equalTariff:    wavgSimple('equalTariff'),
+      steelAluTariff: wavgSimple('steelAluTariff'),
     }
   })
 }
 
-const lineupTableColumns = [
-  { title: '品线', key: 'nameEn', align: 'left' as const, width: 120, fixed: 'left' as const },
-  { title: '战略目标', key: 'targets', align: 'left' as const, width: 110 },
-  { title: 'Market Share', key: 'ms', align: 'left' as const, width: 100 },
-  { title: 'Sales', key: 'sales', align: 'left' as const, width: 130 },
-  { title: 'Revenue', key: 'revenue', align: 'left' as const, width: 140 },
-  { title: 'Profit', key: 'profit', align: 'left' as const, width: 140 },
-  { title: 'Profit %', key: 'profitPct', align: 'left' as const, width: 100 },
-  { title: 'Ads %', key: 'adsPct', align: 'left' as const, width: 100 },
-  { title: 'Promo %', key: 'promoPct', align: 'left' as const, width: 100 },
-  { title: 'MC%(毛收)', key: 'mc', align: 'left' as const, width: 95 },
-  { title: '采购%(毛收)', key: 'cogs', align: 'left' as const, width: 100 },
-  { title: '头程%(毛收)', key: 'freight', align: 'left' as const, width: 100 },
-  { title: '关税%(毛收)', key: 'tariff', align: 'left' as const, width: 100 },
-  { title: '仓促费%(毛收)', key: 'storage', align: 'left' as const, width: 110 },
-  { title: 'CSA', key: 'csa', align: 'left' as const, width: 100 },
-]
+const isUSOnly = computed(() =>
+  activeLineupCountries.value.length === 1 &&
+  activeLineupCountries.value[0] === 'US' &&
+  activeLineupRegions.value.includes('all')
+)
+
+const usOffset = computed(() => isUSOnly.value ? 4 : 0)
+
+const lineupTableColumns = computed(() => {
+  const cols = [
+    { title: '品线', key: 'nameEn', align: 'left' as const, width: 120, fixed: 'left' as const },
+    { title: '战略目标', key: 'targets', align: 'left' as const, width: 110 },
+    { title: 'Market Share', key: 'ms', align: 'left' as const, width: 100 },
+    { title: 'Sales', key: 'sales', align: 'left' as const, width: 130 },
+    { title: 'Revenue', key: 'revenue', align: 'left' as const, width: 140 },
+    { title: 'Profit', key: 'profit', align: 'left' as const, width: 140 },
+    { title: 'Profit %', key: 'profitPct', align: 'left' as const, width: 100 },
+    { title: 'Ads %', key: 'adsPct', align: 'left' as const, width: 100 },
+    { title: 'Promo %', key: 'promoPct', align: 'left' as const, width: 100 },
+    { title: 'MC%(毛收)', key: 'mc', align: 'left' as const, width: 95 },
+    { title: '采购%(毛收)', key: 'cogs', align: 'left' as const, width: 100 },
+    { title: '头程%(毛收)', key: 'freight', align: 'left' as const, width: 100 },
+    { title: '关税%(毛收)', key: 'tariff', align: 'left' as const, width: 100 },
+  ]
+  if (isUSOnly.value) {
+    cols.push(
+      { title: '基础关税+附加费%(毛收)', key: 'basicTariff', align: 'left' as const, width: 180 },
+      { title: '301%(毛收)', key: 's301', align: 'left' as const, width: 105 },
+      { title: '对等关税%(毛收)', key: 'equalTariff', align: 'left' as const, width: 130 },
+      { title: '钢铁铝加征关税%(毛收)', key: 'steelAluTariff', align: 'left' as const, width: 175 },
+    )
+  }
+  cols.push(
+    { title: '仓促费%(毛收)', key: 'storage', align: 'left' as const, width: 110 },
+    { title: 'CSA', key: 'csa', align: 'left' as const, width: 100 },
+  )
+  return cols
+})
 
 /** flagcdn.com 使用 ISO 3166-1 alpha-2，部分内部代码需映射 */
 const CODE_TO_ISO: Record<string, string> = { UK: 'GB' }
@@ -1116,6 +1175,10 @@ function buildLineupTotal(rows: LineupRow[]): LineupRow {
     tariff:    wavgSimple(r => r.tariff),
     storage:   wavgSimple(r => r.storage),
     csa: rows.reduce((s, r) => s + (r.csa ?? 0), 0) || null,
+    basicTariff:    wavgSimple(r => r.basicTariff),
+    s301:           wavgSimple(r => r.s301),
+    equalTariff:    wavgSimple(r => r.equalTariff),
+    steelAluTariff: wavgSimple(r => r.steelAluTariff),
   }
 }
 
@@ -1562,8 +1625,8 @@ const goodSummary = ref({
               </div>
             </template>
 
-            <!-- MC% / 采购% / 头程% / 关税% / 仓促费%（双行，无 diff）-->
-            <template v-else-if="['mc', 'cogs', 'freight', 'tariff', 'storage'].includes(String(column.key))">
+            <!-- MC% / 采购% / 头程% / 关税% / 仓促费% / US关税分解（双行，无 diff）-->
+            <template v-else-if="['mc', 'cogs', 'freight', 'tariff', 'storage', 'basicTariff', 's301', 'equalTariff', 'steelAluTariff'].includes(String(column.key))">
               <div class="pct-cell">
                 <div class="pct-cell__main">{{ record[column.key].v2.toFixed(2) }}%</div>
                 <div class="pct-cell__base">{{ record[column.key].v1 === 0 ? '—' : record[column.key].v1.toFixed(2) + '%' }}</div>
@@ -1608,13 +1671,27 @@ const goodSummary = ref({
                     <span class="diff-pill" :class="lineupRowsTotal[key].diff >= 0 ? 'diff-pill--up' : 'diff-pill--down'">{{ formatRowDiff(lineupRowsTotal[key].diff) }}</span>
                   </div>
                 </a-table-summary-cell>
-                <a-table-summary-cell v-for="(key, i) in (['mc','cogs','freight','tariff','storage'] as const)" :key="key" :index="9+i">
+                <a-table-summary-cell v-for="(key, i) in (['mc','cogs','freight','tariff'] as const)" :key="key" :index="9+i">
                   <div class="pct-cell">
                     <div class="pct-cell__main">{{ lineupRowsTotal[key].v2.toFixed(2) }}%</div>
                     <div class="pct-cell__base">{{ lineupRowsTotal[key].v1.toFixed(2) }}%</div>
                   </div>
                 </a-table-summary-cell>
-                <a-table-summary-cell :index="14">
+                <template v-if="isUSOnly">
+                  <a-table-summary-cell v-for="(key, i) in (['basicTariff', 's301', 'equalTariff', 'steelAluTariff'] as const)" :key="key" :index="13 + i">
+                    <div class="pct-cell">
+                      <div class="pct-cell__main">{{ lineupRowsTotal[key].v2.toFixed(2) }}%</div>
+                      <div class="pct-cell__base">{{ lineupRowsTotal[key].v1 === 0 ? '—' : lineupRowsTotal[key].v1.toFixed(2) + '%' }}</div>
+                    </div>
+                  </a-table-summary-cell>
+                </template>
+                <a-table-summary-cell :index="13 + usOffset">
+                  <div class="pct-cell">
+                    <div class="pct-cell__main">{{ lineupRowsTotal.storage.v2.toFixed(2) }}%</div>
+                    <div class="pct-cell__base">{{ lineupRowsTotal.storage.v1.toFixed(2) }}%</div>
+                  </div>
+                </a-table-summary-cell>
+                <a-table-summary-cell :index="14 + usOffset">
                   <div class="money-cell">
                     <div class="money-cell__main">{{ lineupRowsTotal.csa ? formatMoney(lineupRowsTotal.csa) : '0' }}</div>
                   </div>
@@ -2162,6 +2239,10 @@ const goodSummary = ref({
 
 .lineup-table-wrap {
   padding-top: 8px;
+}
+
+.lineup-table :deep(.ant-table-thead > tr > th) {
+  white-space: nowrap;
 }
 
 .country-kpi-table :deep(.ant-table-header) {
