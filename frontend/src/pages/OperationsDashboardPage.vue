@@ -188,6 +188,11 @@ const KPI_CARDS = [
 const activeAnalysisTab = ref<AnalysisTab>('overview')
 const versionA = ref<string>('2026V2')
 const versionB = ref<string>('2026V1')
+const compareMode = ref<'actual' | 'target'>('actual')
+const COMPARE_MODE_OPTIONS = [
+  { label: '实际数据', value: 'actual' },
+  { label: '目标版本', value: 'target' },
+]
 const currency = ref<'origin' | 'usd'>('origin')
 const showH2Only = ref(false)
 const activeCategories = ref<string[]>(['all'])
@@ -1430,6 +1435,11 @@ const goodSummary = ref({
             <div class="analysis-panel__sheet">
               <div class="analysis-panel__filters">
                 <div class="analysis-panel__version-row">
+                  <a-segmented
+                    v-model:value="compareMode"
+                    class="analysis-panel__compare-mode"
+                    :options="COMPARE_MODE_OPTIONS"
+                  />
                   <a-select
                     v-model:value="versionA"
                     class="analysis-panel__version-select"
@@ -1437,9 +1447,17 @@ const goodSummary = ref({
                   />
                   <span class="analysis-panel__vs" aria-hidden="true">VS</span>
                   <a-select
+                    v-if="compareMode === 'target'"
                     v-model:value="versionB"
                     class="analysis-panel__version-select"
                     :options="versionSelectOptions"
+                  />
+                  <a-select
+                    v-else
+                    value="actual"
+                    class="analysis-panel__version-select"
+                    :options="[{ label: '实际数据', value: 'actual' }]"
+                    disabled
                   />
                   <a-checkbox v-model:checked="showH2Only" class="analysis-panel__h2-checkbox">
                     仅查看下半年数据
@@ -2269,7 +2287,11 @@ const goodSummary = ref({
 .analysis-panel__version-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+.analysis-panel__compare-mode {
+  margin-right: 8px;
 }
 
 .analysis-panel__version-select {
