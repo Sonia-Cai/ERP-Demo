@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch, type Ref } from 'vue'
 import type { TableColumnsType } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import arrowUpSvg   from '@/assets/icons/arrow-up.svg?raw'
@@ -56,6 +56,7 @@ const DEFAULT_CHROME_TAB: ChromeTab = { thirdId: 'op-s3-t2', label: '分析看�
 
 const chromeTabs = ref<ChromeTab[]>([{ ...DEFAULT_CHROME_TAB }])
 const activeTabKey = ref(DEFAULT_CHROME_TAB.thirdId)
+const isPageLoaded = ref(false)
 
 function resolveChromeTabLabel(thirdId: string, fallback: string) {
   return findThirdNavLabel(thirdId) ?? fallback
@@ -728,6 +729,22 @@ const isUSOnly = computed(() =>
 
 const usOffset = computed(() => isUSOnly.value ? 4 : 0)
 
+type TariffKey = 'basicTariff' | 's301' | 'equalTariff' | 'steelAluTariff'
+const TARIFF_KEYS: TariffKey[] = ['basicTariff', 's301', 'equalTariff', 'steelAluTariff']
+const tariffAmountVisible = reactive<Record<TariffKey, boolean>>({
+  basicTariff: false, s301: false, equalTariff: false, steelAluTariff: false,
+})
+const tariffAmountEverOpened = ref(false)
+
+function handleTariffAmountChange(key: TariffKey, val: boolean) {
+  if (val && !tariffAmountEverOpened.value) {
+    TARIFF_KEYS.forEach(k => { tariffAmountVisible[k] = true })
+    tariffAmountEverOpened.value = true
+  } else {
+    tariffAmountVisible[key] = val
+  }
+}
+
 const lineupTableColumns = computed(() => {
   const cols = [
     { title: '品线', key: 'nameEn', align: 'left' as const, width: 120, fixed: 'left' as const },
@@ -746,10 +763,10 @@ const lineupTableColumns = computed(() => {
   ]
   if (isUSOnly.value) {
     cols.push(
-      { title: '基础关税％（毛收）', key: 'basicTariff', align: 'left' as const, width: 150 },
-      { title: '301关税％（毛收）', key: 's301', align: 'left' as const, width: 130 },
-      { title: '122关税％（毛收）', key: 'equalTariff', align: 'left' as const, width: 130 },
-      { title: '钢铁铝铜关税％（毛收）', key: 'steelAluTariff', align: 'left' as const, width: 160 },
+      { title: '基础关税％（毛收）', key: 'basicTariff', align: 'left' as const, width: 215 },
+      { title: '301关税％（毛收）', key: 's301', align: 'left' as const, width: 195 },
+      { title: '122关税％（毛收）', key: 'equalTariff', align: 'left' as const, width: 195 },
+      { title: '钢铁铝铜关税％（毛收）', key: 'steelAluTariff', align: 'left' as const, width: 230 },
     )
   }
   cols.push(
@@ -1055,6 +1072,7 @@ function handleDimensionResize() {
 }
 
 onMounted(() => {
+  setTimeout(() => { isPageLoaded.value = true }, 1200)
   syncChromeTabLabels()
   tickChromeClock()
   chromeClockTimer = setInterval(tickChromeClock, 1000)
@@ -1268,48 +1286,88 @@ const goodSummary = ref({
     </template>
 
     <div class="erp-dashboard__scroll">
+
+      <!-- 骨架屏 -->
+      <Transition name="skeleton-fade">
+        <div v-if="!isPageLoaded" class="page-skeleton" aria-hidden="true">
+          <!-- 分析面板骨架 -->
+          <div class="sk-panel">
+            <div class="sk-panel__tabs">
+              <div class="sk-block sk-panel__tab-item" />
+              <div class="sk-block sk-panel__tab-item" />
+            </div>
+            <div class="sk-panel__body">
+              <div class="sk-panel__filters">
+                <div class="sk-block" style="width:90px;height:28px;border-radius:6px" />
+                <div class="sk-block" style="width:28px;height:16px;border-radius:4px" />
+                <div class="sk-block" style="width:90px;height:28px;border-radius:6px" />
+                <div class="sk-block" style="width:80px;height:28px;border-radius:14px;margin-left:auto" />
+              </div>
+              <div class="sk-panel__table">
+                <div class="sk-block sk-panel__table-head" />
+                <div v-for="i in 6" :key="i" class="sk-block sk-panel__table-row" />
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 卡片骨架 -->
+          <div class="sk-kpi-grid">
+            <div v-for="i in 5" :key="i" class="sk-block sk-kpi-card" />
+          </div>
+
+          <!-- 图表区骨架 -->
+          <div class="sk-block sk-chart-block" />
+          <div class="sk-charts-row">
+            <div class="sk-block sk-chart-half" />
+            <div class="sk-block sk-chart-half" />
+          </div>
+        </div>
+      </Transition>
+
+      <!-- 真实内容 -->
+      <Transition name="page-content-fade">
+        <div v-if="isPageLoaded" class="erp-dashboard__content">
       <section
         class="analysis-panel"
         :class="{ 'analysis-panel--lineup': activeAnalysisTab === 'lineup' }"      >
         <div class="analysis-panel__content">
-          <div class="analysis-panel__bg-wrap" aria-hidden="true">
-            <!-- 蓝色渐变 SVG Tab 形状，切换时水平翻转 -->
-            <div
-              class="analysis-panel__bg-tab"
-              :class="{ 'analysis-panel__bg-tab--flipped': activeAnalysisTab === 'lineup' }"
-            >
+          <div
+            class="analysis-panel__bg-wrap"
+            :class="{ 'analysis-panel__bg-wrap--lineup': activeAnalysisTab === 'lineup' }"
+            aria-hidden="true"
+          >
+            <!-- 身体卡（静止不动，圆角随状态切换） -->
+            <div class="analysis-panel__bg-body" />
+
+            <!-- 出类条（左右滑动 + 镜像） -->
+            <div class="analysis-panel__bg-notch">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="100%"
                 height="100%"
-                viewBox="0 0 1350 202"
+                viewBox="0 0 702 62"
                 fill="none"
                 preserveAspectRatio="none"
               >
-                <!-- 白色底 path（Tab 形状） -->
                 <path
-                  d="M0 10C0 4.47715 4.47715 0 10 0H650.551C653.948 0 657.112 1.72432 658.954 4.57863L693.049 57.4238C694.889 60.2759 698.05 61.9999 701.444 62.0025L1340.01 62.4906C1345.53 62.4949 1350 66.9708 1350 72.4906V192C1350 197.523 1345.52 202 1340 202H10C4.47718 202 0 197.523 0 192L0 10Z"
+                  d="M0 10C0 4.47715 4.47715 0 10 0H650.551C653.948 0 657.112 1.72432 658.954 4.57863L693.049 57.4238C694.889 60.2759 698.05 61.9999 701.444 62H0V10Z"
                   fill="#ffffff"
                 />
-                <!-- 蓝色渐变叠层（同形） -->
                 <path
-                  d="M0 10C0 4.47715 4.47715 0 10 0H650.551C653.948 0 657.112 1.72432 658.954 4.57863L693.049 57.4238C694.889 60.2759 698.05 61.9999 701.444 62.0025L1340.01 62.4906C1345.53 62.4949 1350 66.9708 1350 72.4906V192C1350 197.523 1345.52 202 1340 202H10C4.47718 202 0 197.523 0 192L0 10Z"
-                  fill="url(#panel-tab-grad)"
+                  d="M0 10C0 4.47715 4.47715 0 10 0H650.551C653.948 0 657.112 1.72432 658.954 4.57863L693.049 57.4238C694.889 60.2759 698.05 61.9999 701.444 62H0V10Z"
+                  fill="url(#panel-notch-grad)"
                 />
                 <defs>
                   <linearGradient
-                    id="panel-tab-grad"
-                    x1="703.5"
+                    id="panel-notch-grad"
+                    x1="351"
                     y1="0"
-                    x2="703.5"
-                    y2="202"
+                    x2="351"
+                    y2="62"
                     gradientUnits="userSpaceOnUse"
                   >
                     <stop offset="0%"   stop-color="#346BFA" stop-opacity="0.10" />
-                    <stop offset="25%"  stop-color="#346BFA" stop-opacity="0.068" />
-                    <stop offset="50%"  stop-color="#346BFA" stop-opacity="0.038" />
-                    <stop offset="75%"  stop-color="#346BFA" stop-opacity="0.013" />
-                    <stop offset="100%" stop-color="#346BFA" stop-opacity="0" />
+                    <stop offset="100%" stop-color="#346BFA" stop-opacity="0.061" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -1469,6 +1527,7 @@ const goodSummary = ref({
         </div>
       </section>
 
+      <Transition name="tab-panel">
       <div v-show="activeAnalysisTab === 'overview'" class="kpi-cards-grid">
         <div
           v-for="card in kpiCards"
@@ -1493,6 +1552,7 @@ const goodSummary = ref({
           </div>
         </div>
       </div>
+      </Transition>
 
       <div class="country-kpi-table">
         <div
@@ -1503,8 +1563,10 @@ const goodSummary = ref({
         </div>
 
         <!-- 总览 tab：各国经营指标 -->
+        <Transition name="tab-panel" mode="out-in">
         <a-table
           v-if="activeAnalysisTab !== 'lineup'"
+          key="country-table"
           :columns="countryColumns"
           :data-source="countryRows"
           :pagination="false"
@@ -1554,7 +1616,7 @@ const goodSummary = ref({
         </a-table>
 
         <!-- 品线经营 tab：品线经营指标 -->
-        <div v-else class="lineup-table-wrap">
+        <div v-else key="lineup-table" class="lineup-table-wrap">
         <a-table
           class="lineup-table"
           :columns="lineupTableColumns"
@@ -1565,6 +1627,20 @@ const goodSummary = ref({
           row-key="key"
           size="middle"
         >
+          <template #headerCell="{ column, title }">
+            <template v-if="TARIFF_KEYS.includes(column.key as TariffKey)">
+              <div class="tariff-col-header" @click.stop>
+                <span>{{ title }}</span>
+                <a-switch
+                  size="small"
+                  :checked="tariffAmountVisible[column.key as TariffKey]"
+                  @change="(val: boolean) => handleTariffAmountChange(column.key as TariffKey, val)"
+                />
+              </div>
+            </template>
+            <template v-else>{{ title }}</template>
+          </template>
+
           <template #bodyCell="{ column, record }">
             <!-- 品线名称 -->
             <template v-if="column.key === 'nameEn'">
@@ -1625,11 +1701,25 @@ const goodSummary = ref({
               </div>
             </template>
 
-            <!-- MC% / 采购% / 头程% / 关税% / 仓促费% / US关税分解（双行，无 diff）-->
-            <template v-else-if="['mc', 'cogs', 'freight', 'tariff', 'storage', 'basicTariff', 's301', 'equalTariff', 'steelAluTariff'].includes(String(column.key))">
+            <!-- MC% / 采购% / 头程% / 关税% / 仓促费%（双行，无 diff）-->
+            <template v-else-if="['mc', 'cogs', 'freight', 'tariff', 'storage'].includes(String(column.key))">
               <div class="pct-cell">
                 <div class="pct-cell__main">{{ record[column.key].v2.toFixed(2) }}%</div>
                 <div class="pct-cell__base">{{ record[column.key].v1 === 0 ? '—' : record[column.key].v1.toFixed(2) + '%' }}</div>
+                <span class="data-cell__spacer" aria-hidden="true" />
+              </div>
+            </template>
+
+            <!-- US关税分解（支持金额展示）-->
+            <template v-else-if="TARIFF_KEYS.includes(String(column.key) as TariffKey)">
+              <div class="pct-cell">
+                <div class="pct-cell__main">
+                  {{ record[column.key].v2.toFixed(2) }}%<template v-if="tariffAmountVisible[column.key as TariffKey]"> | {{ formatMoney(Math.round(record[column.key].v2 / 100 * record.revenue.v2)) }}</template>
+                </div>
+                <div class="pct-cell__base">
+                  <template v-if="record[column.key].v1 === 0">—</template>
+                  <template v-else>{{ record[column.key].v1.toFixed(2) }}%<template v-if="tariffAmountVisible[column.key as TariffKey]"> | {{ formatMoney(Math.round(record[column.key].v1 / 100 * record.revenue.v1)) }}</template></template>
+                </div>
                 <span class="data-cell__spacer" aria-hidden="true" />
               </div>
             </template>
@@ -1680,8 +1770,13 @@ const goodSummary = ref({
                 <template v-if="isUSOnly">
                   <a-table-summary-cell v-for="(key, i) in (['basicTariff', 's301', 'equalTariff', 'steelAluTariff'] as const)" :key="key" :index="13 + i">
                     <div class="pct-cell">
-                      <div class="pct-cell__main">{{ lineupRowsTotal[key].v2.toFixed(2) }}%</div>
-                      <div class="pct-cell__base">{{ lineupRowsTotal[key].v1 === 0 ? '—' : lineupRowsTotal[key].v1.toFixed(2) + '%' }}</div>
+                      <div class="pct-cell__main">
+                        {{ lineupRowsTotal[key].v2.toFixed(2) }}%<template v-if="tariffAmountVisible[key]"> | {{ formatMoney(Math.round(lineupRowsTotal[key].v2 / 100 * lineupRowsTotal.revenue.v2)) }}</template>
+                      </div>
+                      <div class="pct-cell__base">
+                        <template v-if="lineupRowsTotal[key].v1 === 0">—</template>
+                        <template v-else>{{ lineupRowsTotal[key].v1.toFixed(2) }}%<template v-if="tariffAmountVisible[key]"> | {{ formatMoney(Math.round(lineupRowsTotal[key].v1 / 100 * lineupRowsTotal.revenue.v1)) }}</template></template>
+                      </div>
                     </div>
                   </a-table-summary-cell>
                 </template>
@@ -1702,8 +1797,10 @@ const goodSummary = ref({
 
         </a-table>
         </div>
+        </Transition>
       </div>
 
+      <Transition name="tab-panel">
       <div v-show="activeAnalysisTab === 'overview'" class="profit-breakdown">
         <div class="profit-breakdown__head">
           <div class="profit-breakdown__title">
@@ -1741,7 +1838,9 @@ const goodSummary = ref({
           <div ref="breakdownPieRef" class="profit-breakdown__pie" />
         </div>
       </div>
+      </Transition>
 
+      <Transition name="tab-panel">
       <div v-show="activeAnalysisTab === 'overview'" class="dimension-analysis">
         <div class="dimension-analysis__head">
           <div class="dimension-analysis__title">维度分析</div>
@@ -1786,8 +1885,10 @@ const goodSummary = ref({
           <div ref="dimensionChartRef" class="dimension-analysis__chart" />
         </div>
       </div>
+      </Transition>
 
       <!-- 总结卡片 -->
+      <Transition name="tab-panel">
       <a-row v-show="activeAnalysisTab === 'overview'" :gutter="[16, 16]" class="summary-row">
         <a-col :xs="24" :lg="12">
           <div class="summary-card summary-card--risk">
@@ -1836,11 +1937,145 @@ const goodSummary = ref({
           </div>
         </a-col>
       </a-row>
+      </Transition>
+        </div><!-- /erp-dashboard__content -->
+      </Transition>
+
     </div>
   </ErpAppShell>
 </template>
 
 <style scoped>
+/* ========== 骨架屏 ========== */
+@keyframes sk-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.sk-block {
+  background: linear-gradient(
+    90deg,
+    #f0f2f5 25%,
+    #e8eaed 50%,
+    #f0f2f5 75%
+  );
+  background-size: 1200px 100%;
+  animation: sk-shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base, 16px);
+  padding-bottom: var(--spacing-base, 16px);
+}
+
+/* 分析面板骨架 */
+.sk-panel {
+  border-radius: var(--radius-card, 10px);
+  background: #fff;
+  overflow: hidden;
+  border: 1px solid #f0f2f5;
+}
+
+.sk-panel__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px 0 0 4px;
+  background: var(--color-bg-page, #f5f7fa);
+}
+
+.sk-panel__tab-item {
+  width: 180px;
+  height: 36px;
+  border-radius: 4px 4px 0 0;
+}
+
+.sk-panel__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sk-panel__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sk-panel__table-head {
+  height: 40px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.sk-panel__table-row {
+  height: 56px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+.sk-panel__table-row:nth-child(odd) {
+  opacity: 0.5;
+}
+
+/* KPI 卡片 */
+.sk-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-base, 16px);
+}
+
+.sk-kpi-card {
+  height: 118px;
+  border-radius: 10px;
+}
+
+/* 图表区 */
+.sk-chart-block {
+  height: 260px;
+  border-radius: var(--radius-card, 10px);
+}
+
+.sk-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-base, 16px);
+}
+
+.sk-chart-half {
+  height: 240px;
+  border-radius: var(--radius-card, 10px);
+}
+
+/* 过渡动画 */
+.skeleton-fade-leave-active {
+  transition: opacity 300ms ease, transform 300ms ease;
+  position: absolute;
+  width: 100%;
+}
+.skeleton-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.page-content-fade-enter-active {
+  transition: opacity 360ms ease, transform 360ms ease;
+}
+.page-content-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.erp-dashboard__content {
+  display: contents;
+}
+
+/* ========== /骨架屏 ========== */
+
 .analysis-panel {
   position: relative;
   flex-shrink: 0;
@@ -1870,22 +2105,64 @@ const goodSummary = ref({
   pointer-events: none;
 }
 
-/* Layer 2: 蓝色渐变 SVG Tab 形，宽高均撑满父级 */
-.analysis-panel__bg-tab {
+/* Tab 内容区切换过渡 */
+.tab-panel-enter-active {
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.tab-panel-leave-active {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.tab-panel-enter-from,
+.tab-panel-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Layer 2a: 身体卡 — 静止不动，圆角随状态切换 */
+.analysis-panel__bg-body {
   position: absolute;
-  inset: 0;
-  transform-origin: center top;
+  left: 0;
+  right: 0;
+  top: 61px;
+  bottom: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(52, 107, 250, 0.061) 0%,
+      rgba(52, 107, 250, 0.038) 27.86%,
+      rgba(52, 107, 250, 0.013) 63.93%,
+      rgba(52, 107, 250, 0)     100%
+    ),
+    #ffffff;
+  border-radius: 0 var(--radius-card, 10px) var(--radius-card, 10px) var(--radius-card, 10px);
+  transition:
+    border-top-left-radius 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-top-right-radius 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.analysis-panel__bg-wrap--lineup .analysis-panel__bg-body {
+  border-radius: var(--radius-card, 10px) 0 var(--radius-card, 10px) var(--radius-card, 10px);
+}
+
+/* Layer 2b: 出类条 — 左右滑动 + 镜像 */
+.analysis-panel__bg-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 51.93%;
+  height: 62px;
+  transform-origin: 50% 50%;
   transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.analysis-panel__bg-tab svg {
+.analysis-panel__bg-notch svg {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.analysis-panel__bg-tab--flipped {
-  transform: scaleX(-1);
+.analysis-panel__bg-wrap--lineup .analysis-panel__bg-notch {
+  transform: translateX(92.59%) scaleX(-1);
 }
 
 .analysis-panel__body {
@@ -2098,6 +2375,10 @@ const goodSummary = ref({
   background: rgba(255, 255, 255, 0.2);
 }
 
+.analysis-panel__geo-chip:not(.analysis-panel__geo-chip--active):hover {
+  color: #5A8BFB;
+}
+
 .analysis-panel__geo-chip--active {
   background: transparent;
   border-color: transparent;
@@ -2169,6 +2450,11 @@ const goodSummary = ref({
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 140ms;
+}
+
+.analysis-panel__category-chip:not(.analysis-panel__category-chip--active):hover .analysis-panel__category-label {
+  color: #5A8BFB;
 }
 
 .analysis-panel__category-chip--active .analysis-panel__category-label {
@@ -2242,6 +2528,13 @@ const goodSummary = ref({
 }
 
 .lineup-table :deep(.ant-table-thead > tr > th) {
+  white-space: nowrap;
+}
+
+.tariff-col-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
 }
 
